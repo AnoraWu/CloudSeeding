@@ -1,3 +1,15 @@
+'''
+微博数据_人工增雨.py
+
+Purpose: Web scraping from weibo.com
+
+Author: Yang Zhang, Wanru Wu
+
+Date: 9/16/2024
+
+'''
+
+
 import requests
 from bs4 import BeautifulSoup as BS
 import pandas as pd
@@ -83,6 +95,9 @@ def get_weibo(v_keyword, v_start_time, v_end_time, v_result_file):
 		repost_count_list = []  # 转发数
 		comment_count_list = []  # 评论数
 		like_count_list = []  # 点赞数
+		image_url_list = [] # 图片链接
+		video_url_list = [] # 视频链接
+		urls = [] #网页链接
 		for item in item_list:
 			# 微博id
 			id = str(item.attrs['mid'])
@@ -115,9 +130,22 @@ def get_weibo(v_keyword, v_start_time, v_end_time, v_result_file):
 			if like_count == '赞':
 				like_count = 0
 			like_count_list.append(like_count)
-			# 图片
-			# 视频
-			# Url
+			# 图片链接
+			if item.find('div', {'node-type': 'feed_list_media_prev'}):
+				image = item.find('div', {'node-type': 'feed_list_media_prev'}).find('img')['src']
+			else:
+				image = '无图片'
+			image_url_list.append(image)
+			# 视频链接
+
+			# 网页链接
+			if item.find('p', {'node-type': 'feed_list_content'}).find('a'):
+				url = item.find('p', {'node-type': 'feed_list_content'}).find('a')['href']
+			elif item.find('p', {'node-type': 'feed_list_content_full'}).find('a'):
+				url = item.find('p', {'node-type': 'feed_list_content_full'}).find('a')['href']
+			else:
+				url = '无网页链接'
+
 		# 保存数据
 		df = pd.DataFrame(
 			{
