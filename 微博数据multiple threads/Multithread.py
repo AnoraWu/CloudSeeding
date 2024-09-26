@@ -1,5 +1,6 @@
 import threading
 import pathlib
+import os
 
 # Set up directory
 os.chdir('/Users/anorawu/Documents/GitHub/CloudSeeding/微博数据multiple threads')
