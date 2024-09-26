@@ -8,6 +8,21 @@ import random
 
 os.chdir("/Users/anorawu/Documents/GitHub/CloudSeeding")
 
+# 当前时间戳
+#now = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
+# 保存文件名
+result_file = '微博数据_人工增雨_22-23.csv'
+#  搜索关键词
+keyword = '人工增雨'
+# 最大页
+max_page = 50
+# cookie值 改为自己登录微博账号之后的cookie
+COOKIE_PC = 'SCF=AlBMOReBUvICT5u0wVPbCLnXr2HYblJrgoNylYIMlgJu2NRDAjNgGf4MrN_kgA-sB0O7Trf6H-sOsaASpA5rq4A.; XSRF-TOKEN=HofqIXwlGCm5-nRAVd18eZBe; ALF=1729874967; SUB=_2A25L8E9HDeRhGeFH71oY8inIzD-IHXVojM6PrDV8PUJbkNB-LUjTkW1Newwp33rczDBbZ24pHKN826m26oicfVCl; SUBP=0033WrSXqPxfM725Ws9jqgMF55529P9D9W5QukEsSOyNmALA94RNE55o5JpX5KMhUgL.FoM4Shn4eoMXS0e2dJLoIEXLxKqL1hnL1K2LxKML1h.LBo.LxK-L1K.LBoqLxKqL1KqLB-qLxK-L1-qLB.2t; WBPSESS=NyAZoRytRkRkEvTdNBasMCpcF454xBS481a8B0WCfxGrh0SiHHcZUKE2mCIAo_dIFlco4oRemv5tBGXRY-OG8TCEdMUSKCJ54qEGqF3vgekz1ZDpNB6lpa-xupjAkVnZjSoYyoo94tUEA9L6Nj_Pgw==; ariaDefaultTheme=default; ariaFixed=true; ariaReadtype=1; ariaMouseten=null; ariaStatus=false'
+# 搜索起始时间：2010年1月1日0点
+start_time = datetime.datetime(2022, 1, 1, 0)
+# 开启爬取
+end_time = datetime.datetime(2023, 12, 31, 0)
+k = (end_time - start_time).days
 
 def get_weibo(v_keyword, v_start_time, v_end_time, v_result_file):
 	"""
@@ -179,28 +194,12 @@ def get_weibo(v_keyword, v_start_time, v_end_time, v_result_file):
 		print('结果保存成功:{}'.format(v_result_file))
 
 
-if __name__ == '__main__':
-	# 当前时间戳
-	#now = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
-	# 保存文件名
-	result_file = '微博数据_人工增雨_22-23.csv'
-	#  搜索关键词
-	keyword = '人工增雨'
-	# 最大页
-	max_page = 50
-	# cookie值 改为自己登录微博账号之后的cookie
-	COOKIE_PC = 'SCF=AlBMOReBUvICT5u0wVPbCLnXr2HYblJrgoNylYIMlgJu2NRDAjNgGf4MrN_kgA-sB0O7Trf6H-sOsaASpA5rq4A.; XSRF-TOKEN=HofqIXwlGCm5-nRAVd18eZBe; ALF=1729874967; SUB=_2A25L8E9HDeRhGeFH71oY8inIzD-IHXVojM6PrDV8PUJbkNB-LUjTkW1Newwp33rczDBbZ24pHKN826m26oicfVCl; SUBP=0033WrSXqPxfM725Ws9jqgMF55529P9D9W5QukEsSOyNmALA94RNE55o5JpX5KMhUgL.FoM4Shn4eoMXS0e2dJLoIEXLxKqL1hnL1K2LxKML1h.LBo.LxK-L1K.LBoqLxKqL1KqLB-qLxK-L1-qLB.2t; WBPSESS=NyAZoRytRkRkEvTdNBasMCpcF454xBS481a8B0WCfxGrh0SiHHcZUKE2mCIAo_dIFlco4oRemv5tBGXRY-OG8TCEdMUSKCJ54qEGqF3vgekz1ZDpNB6lpa-xupjAkVnZjSoYyoo94tUEA9L6Nj_Pgw==; ariaDefaultTheme=default; ariaFixed=true; ariaReadtype=1; ariaMouseten=null; ariaStatus=false'
-	# 搜索起始时间：2010年1月1日0点
-	start_time = datetime.datetime(2022, 1, 1, 0)
-	# 开启爬取
-	end_time = datetime.datetime(2023, 12, 31, 0)
-	k = (end_time - start_time).days
-	
-	for i in range(0, k + 1):  
-		try:
-			get_weibo(v_keyword=keyword,
-                      v_start_time=(start_time + datetime.timedelta(days=i)).strftime('%Y-%m-%d-%H'),
-                      v_end_time=(start_time + datetime.timedelta(days=i + 1)).strftime('%Y-%m-%d-%H'),
-                      v_result_file=result_file)
-		except Exception as e:
-			print(i, '发生异常，继续:', str(e))
+
+for i in range(0, k + 1):  
+	try:
+		get_weibo(v_keyword=keyword,
+					v_start_time=(start_time + datetime.timedelta(days=i)).strftime('%Y-%m-%d-%H'),
+					v_end_time=(start_time + datetime.timedelta(days=i + 1)).strftime('%Y-%m-%d-%H'),
+					v_result_file=result_file)
+	except Exception as e:
+		print(i, '发生异常，继续:', str(e))
