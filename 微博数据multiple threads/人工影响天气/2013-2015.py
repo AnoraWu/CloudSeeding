@@ -8,25 +8,6 @@ import random
 
 os.chdir("/Users/anorawu/Documents/GitHub/CloudSeeding")
 
-# 当前时间戳
-#now = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
-# 保存文件名
-result_file = '微博数据_人工影响天气_13-15.csv'
-#  搜索关键词
-keyword = '人工影响天气'
-# 最大页
-max_page = 50
-# cookie值 改为自己登录微博账号之后的cookie
-COOKIE_PC = 'SCF=AlBMOReBUvICT5u0wVPbCLnXr2HYblJrgoNylYIMlgJu2NRDAjNgGf4MrN_kgA-sB0O7Trf6H-sOsaASpA5rq4A.; XSRF-TOKEN=HofqIXwlGCm5-nRAVd18eZBe; ALF=1729874967; SUB=_2A25L8E9HDeRhGeFH71oY8inIzD-IHXVojM6PrDV8PUJbkNB-LUjTkW1Newwp33rczDBbZ24pHKN826m26oicfVCl; SUBP=0033WrSXqPxfM725Ws9jqgMF55529P9D9W5QukEsSOyNmALA94RNE55o5JpX5KMhUgL.FoM4Shn4eoMXS0e2dJLoIEXLxKqL1hnL1K2LxKML1h.LBo.LxK-L1K.LBoqLxKqL1KqLB-qLxK-L1-qLB.2t; WBPSESS=NyAZoRytRkRkEvTdNBasMCpcF454xBS481a8B0WCfxGrh0SiHHcZUKE2mCIAo_dIFlco4oRemv5tBGXRY-OG8TCEdMUSKCJ54qEGqF3vgekz1ZDpNB6lpa-xupjAkVnZjSoYyoo94tUEA9L6Nj_Pgw==; ariaDefaultTheme=default; ariaFixed=true; ariaReadtype=1; ariaMouseten=null; ariaStatus=false'
-
-# 搜索起始时间：2010年1月1日0点
-start_time = datetime.datetime(2013, 1, 1, 0)
-# 开启爬取
-end_time = datetime.datetime(2015, 12, 31, 0)
-k = (end_time - start_time).days
-
-
-
 def get_weibo(v_keyword, v_start_time, v_end_time, v_result_file):
 	"""
 	爬取微博搜索结果函数
@@ -129,32 +110,24 @@ def get_weibo(v_keyword, v_start_time, v_end_time, v_result_file):
 			if like_count == '赞':
 				like_count = 0
 			like_count_list.append(like_count)
+
 			# 图片链接
+			image = '无图片'
 			if item.find('div', {'node-type': 'feed_list_media_prev'}):
-				image = item.find('div', {'node-type': 'feed_list_media_prev'}).find('img')['src']
-			else:
-				image = '无图片'
+				if item.find('div', {'node-type': 'feed_list_media_prev'}).find('img'):
+					image = item.find('div', {'node-type': 'feed_list_media_prev'}).find('img')['src']
 			image_url_list.append(image)
+
 			# # 视频链接
 			# if item.find('video'):
 			# 	video = item.find('video')['src']
 			# else:
 			# 	video = '无视频'
 			# video_url_list.append(video)
+
 			# 网页链接
 			url = '无网页链接' 
-			if item.find('p', {'node-type': 'feed_list_content'}):
-				a_tags = item.find('p', {'node-type': 'feed_list_content'}).find_all('a')
-				if a_tags:
-					for a_tag in a_tags:
-						link_text = a_tag.text.strip()
-						# Check if the link text is enclosed in #, like #XXX#
-						if '网页链接' in link_text:
-							url = a_tag['href']
-							break
-				else:
-					url = '无网页链接'
-			elif item.find('p', {'node-type': 'feed_list_content_full'}):
+			if item.find('p', {'node-type': 'feed_list_content_full'}):
 				a_tags = item.find('p', {'node-type': 'feed_list_content_full'}).find_all('a')
 				if a_tags:
 					for a_tag in a_tags:
@@ -163,8 +136,15 @@ def get_weibo(v_keyword, v_start_time, v_end_time, v_result_file):
 						if '网页链接' in link_text:
 							url = a_tag['href']
 							break
-				else:
-					url = '无网页链接'
+			elif item.find('p', {'node-type': 'feed_list_content'}):
+				a_tags = item.find('p', {'node-type': 'feed_list_content'}).find_all('a')
+				if a_tags:
+					for a_tag in a_tags:
+						link_text = a_tag.text.strip()
+						# Check if the link text is enclosed in #, like #XXX#
+						if '网页链接' in link_text:
+							url = a_tag['href']
+							break
 			else:
 				url = '无网页链接'
 			urls.append(url)
@@ -197,11 +177,53 @@ def get_weibo(v_keyword, v_start_time, v_end_time, v_result_file):
 		print('结果保存成功:{}'.format(v_result_file))
 
 
-for i in range(0, k + 1):  
-	try:
-		get_weibo(v_keyword=keyword,
-					v_start_time=(start_time + datetime.timedelta(days=i)).strftime('%Y-%m-%d-%H'),
-					v_end_time=(start_time + datetime.timedelta(days=i + 1)).strftime('%Y-%m-%d-%H'),
-					v_result_file=result_file)
-	except Exception as e:
-		print(i, '发生异常，继续:', str(e))
+def get_latest_datetime_from_csv(v_result_file):
+    """从CSV文件中获取最新的时间戳"""
+    try:
+        df = pd.read_csv(v_result_file)
+        if not df.empty:
+            df['发布时间'] = pd.to_datetime(df['发布时间'], format='%Y年%m月%d日 %H:%M')
+            latest_datetime = df['发布时间'].max()
+            return latest_datetime
+        else:
+            return None
+    except FileNotFoundError:
+        return None
+
+
+
+# 保存文件名
+result_file = '微博数据_人工影响天气_13-15.csv'
+#  搜索关键词
+keyword = '人工影响天气'
+# 最大页
+max_page = 50
+# cookie值 改为自己登录微博账号之后的cookie
+COOKIE_PC = 'SCF=AlBMOReBUvICT5u0wVPbCLnXr2HYblJrgoNylYIMlgJu2NRDAjNgGf4MrN_kgA-sB0O7Trf6H-sOsaASpA5rq4A.; XSRF-TOKEN=HofqIXwlGCm5-nRAVd18eZBe; ALF=1729874967; SUB=_2A25L8E9HDeRhGeFH71oY8inIzD-IHXVojM6PrDV8PUJbkNB-LUjTkW1Newwp33rczDBbZ24pHKN826m26oicfVCl; SUBP=0033WrSXqPxfM725Ws9jqgMF55529P9D9W5QukEsSOyNmALA94RNE55o5JpX5KMhUgL.FoM4Shn4eoMXS0e2dJLoIEXLxKqL1hnL1K2LxKML1h.LBo.LxK-L1K.LBoqLxKqL1KqLB-qLxK-L1-qLB.2t; WBPSESS=NyAZoRytRkRkEvTdNBasMCpcF454xBS481a8B0WCfxGrh0SiHHcZUKE2mCIAo_dIFlco4oRemv5tBGXRY-OG8TCEdMUSKCJ54qEGqF3vgekz1ZDpNB6lpa-xupjAkVnZjSoYyoo94tUEA9L6Nj_Pgw==; ariaDefaultTheme=default; ariaFixed=true; ariaReadtype=1; ariaMouseten=null; ariaStatus=false'
+# 设置起始时间
+start_time = datetime.datetime(2013, 1, 1, 0)
+end_time = datetime.datetime(2015, 12, 31, 0)
+latest_datetime = get_latest_datetime_from_csv(result_file)
+
+# 开启爬取
+if latest_datetime:
+	k = (end_time - latest_datetime).days
+	for i in range(0, k + 1):  
+		try:
+			get_weibo(v_keyword=keyword,
+						v_start_time=(latest_datetime + datetime.timedelta(days=i)).strftime('%Y-%m-%d-%H'),
+						v_end_time=(latest_datetime + datetime.timedelta(days=i + 1)).strftime('%Y-%m-%d-%H'),
+						v_result_file=result_file)
+		except Exception as e:
+			print(i, '发生异常，继续:', str(e))
+else:
+	k = (end_time - start_time).days
+	for i in range(0, k + 1):  
+		try:
+			get_weibo(v_keyword=keyword,
+						v_start_time=(start_time + datetime.timedelta(days=i)).strftime('%Y-%m-%d-%H'),
+						v_end_time=(start_time + datetime.timedelta(days=i + 1)).strftime('%Y-%m-%d-%H'),
+						v_result_file=result_file)
+		except Exception as e:
+			print(i, '发生异常，继续:', str(e))
+
