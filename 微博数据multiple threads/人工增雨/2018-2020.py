@@ -18,7 +18,7 @@ def get_weibo(v_keyword, v_start_time, v_end_time, v_result_file):
 	:return: None
 	"""
 	
-	for page in range(max_page,0,-1):  # 前1页
+	for page in range(1, max_page + 1):  # 前1页
 		print('开始爬取[从{}到{}],第{}页'.format(v_start_time, v_end_time, page))
 		sleep(random.uniform(0, 2))
 		# 请求地址
@@ -56,7 +56,7 @@ def get_weibo(v_keyword, v_start_time, v_end_time, v_result_file):
 		# 判断结束条件
 		if '抱歉，未找到相关结果' in soup.text or '以下是您可能感兴趣的微博' in soup.text:
 			print('发现结束标识，退出此时间段循环..')
-			continue
+			break
 		item_list = soup.find_all('div', {'action-type': 'feed_list_item'})
 		print('本页微博数量:', len(item_list))
 		weibo_url_list = [] # 微博链接
@@ -70,7 +70,7 @@ def get_weibo(v_keyword, v_start_time, v_end_time, v_result_file):
 		image_url_list = [] # 图片链接
 		# video_url_list = [] # 视频链接
 		urls_list = [] #网页链接
-		for item in reversed(item_list):
+		for item in item_list:
 
 			# 微博链接
 			if item.find('a',{'@click': True}):
@@ -185,7 +185,7 @@ def get_latest_datetime_from_csv(v_result_file):
         return None
 
 # 保存文件名
-result_file = '微博数据_人工增雨18-20.csv'
+result_file = '微博数据_人工增雨_18-20.csv'
 #  搜索关键词
 keyword = '人工增雨'
 # 最大页

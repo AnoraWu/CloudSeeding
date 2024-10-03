@@ -18,7 +18,7 @@ def get_weibo(v_keyword, v_start_time, v_end_time, v_result_file):
 	:return: None
 	"""
 	
-	for page in range(max_page, 0, -1):  # 前1页
+	for page in range(1, max_page + 1):  # 前1页
 		print('开始爬取[从{}到{}],第{}页'.format(v_start_time, v_end_time, page))
 		sleep(random.uniform(0, 2))
 		# 请求地址
@@ -191,7 +191,7 @@ keyword = '人工影响天气'
 # 最大页
 max_page = 50
 # cookie值 改为自己登录微博账号之后的cookie
-COOKIE_PC = 'SCF=AlBMOReBUvICT5u0wVPbCLnXr2HYblJrgoNylYIMlgJu2NRDAjNgGf4MrN_kgA-sB0O7Trf6H-sOsaASpA5rq4A.; ariaDefaultTheme=default; ariaFixed=true; ariaReadtype=1; ariaMouseten=null; ariaStatus=false; SINAGLOBAL=2579903780436.4746.1727445568781; ULV=1727445568811:1:1:1:2579903780436.4746.1727445568781:; XSRF-TOKEN=rv3tauP9NWSyshNRachhWYPh; SUB=_2A25L_BBoDeRhGeFH71oY8inIzD-IHXVpcC2grDV8PUNbmtANLXXTkW9Newwp33WPvMjOIyWw2xNRWIoVnUtE210E; SUBP=0033WrSXqPxfM725Ws9jqgMF55529P9D9W5QukEsSOyNmALA94RNE55o5JpX5KzhUgL.FoM4Shn4eoMXS0e2dJLoIEXLxKqL1hnL1K2LxKML1h.LBo.LxK-L1K.LBoqLxKqL1KqLB-qLxK-L1-qLB.2t; ALF=02_1730145592; WBPSESS=NyAZoRytRkRkEvTdNBasMCpcF454xBS481a8B0WCfxGrh0SiHHcZUKE2mCIAo_dIugQnaERr8-sAfqe851bbosbdH773FjxqrSz0pqkV3Ac4wh0BNodDKeCT-CXUOH8p8UHrzBs6oRc6tI6ANjSIvQ=='
+COOKIE_PC = 'SCF=AlBMOReBUvICT5u0wVPbCLnXr2HYblJrgoNylYIMlgJu2NRDAjNgGf4MrN_kgA-sB0O7Trf6H-sOsaASpA5rq4A.; ariaDefaultTheme=default; ariaFixed=true; ariaReadtype=1; ariaMouseten=null; ariaStatus=false; SINAGLOBAL=2579903780436.4746.1727445568781; ULV=1727445568811:1:1:1:2579903780436.4746.1727445568781:; XSRF-TOKEN=rv3tauP9NWSyshNRachhWYPh; SUB=_2A25L_BBoDeRhGeFH71oY8inIzD-IHXVpcC2grDV8PUNbmtANLXXTkW9Newwp33WPvMjOIyWw2xNRWIoVnUtE210E; SUBP=0033WrSXqPxfM725Ws9jqgMF55529P9D9W5QukEsSOyNmALA94RNE55o5JpX5KzhUgL.FoM4Shn4eoMXS0e2dJLoIEXLxKqL1hnL1K2LxKML1h.LBo.LxK-L1K.LBoqLxKqL1KqLB-qLxK-L1-qLB.2t; ALF=02_1730145592; WBPSESS=NyAZoRytRkRkEvTdNBasMCpcF454xBS481a8B0WCfxGrh0SiHHcZUKE2mCIAo_dIugQnaERr8-sAfqe851bbolc-5n5UCyIrTFDfPbVPX_RRdv9o76onw8tqmeaR5jjpbSO0Iws880GFaJpL-GAVvA=='
 # 设置起始时间
 start_time = datetime.datetime(2018, 1, 1, 0)
 end_time = datetime.datetime(2020, 12, 31, 0)
