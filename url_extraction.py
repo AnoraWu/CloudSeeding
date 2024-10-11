@@ -6,13 +6,14 @@ from urllib.request import urlopen
 
 def extract_words(url):
     try:
-        html = urlopen(url).read()
+        html = requests.get(url)
     except:
         print(f"Error opening url: {url}")
         return "Error opening URL"
     
-    soup = BS(html, features="html.parser")
-    text = soup.get_text()
+    html.encoding = 'utf-8'
+    soup = BS(html.text, features="html.parser")
+    text = soup.get_text(separator="\n").strip()
     
     # Try to find any specific 'desc' class divs
     descs = soup.find_all('div', {'class': 'desc'})
@@ -22,11 +23,10 @@ def extract_words(url):
             if '此网页未在微博完成域名备案' in desc.text.strip():
                 # Follow the redirection URL and retry extracting text
                 redirect_url = descs[0].text.strip()
-                print(extract_words(redirect_url))
                 return extract_words(redirect_url)
     
-    print(text.strip())
-    return text.strip()
+    print(text)
+    return text
 
 if __name__ == '__main__':
     filename =  '微博数据_人影作业_10-13'
