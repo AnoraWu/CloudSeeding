@@ -6,9 +6,13 @@ from urllib.request import urlopen
 
 def extract_words(url):
     try:
-        html = requests.get(url)
-    except:
-        print(f"Error opening url: {url}")
+        # Set the timeout to 120 seconds (2 minutes)
+        html = requests.get(url, timeout=120)
+    except requests.Timeout:
+        print(f"Timeout error: The request to {url} took longer than 2 minutes.")
+        return "Error: Timeout"
+    except Exception as e:
+        print(f"Error opening url: {url}. Error: {e}")
         return "Error opening URL"
     
     html.encoding = 'utf-8'
