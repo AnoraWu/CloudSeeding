@@ -20,7 +20,7 @@ def get_weibo(v_keyword, v_start_time, v_end_time, v_result_file):
 	
 	for page in range(1, max_page + 1):  # 前1页
 		print('开始爬取[从{}到{}],第{}页'.format(v_start_time, v_end_time, page))
-		sleep(random.uniform(0, 2))
+		sleep(random.uniform(0, 10))
 		# 请求地址
 		url = 'https://s.weibo.com/weibo'
 		# 请求参数
