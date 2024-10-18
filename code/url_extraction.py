@@ -3,6 +3,7 @@ import requests
 from bs4 import BeautifulSoup as BS
 import ast
 from urllib.request import urlopen
+import os
 
 def extract_words(url):
     try:
@@ -34,8 +35,9 @@ def extract_words(url):
 
 if __name__ == '__main__':
 
-    filename_list = ['微博数据_人影办_10-13','微博数据_人影办_14-17','微博数据_人影办_18-20','微博数据_人影办_21-23']
-    
+    os.chdir('/Users/anorawu/Documents/GitHub/CloudSeeding/data/微博数据')
+    filename_list = ['微博数据_人影作业_10-13','微博数据_人影作业_14-17','微博数据_人影作业_18-20','微博数据_人影作业_21-23','微博数据_人影办_10-13','微博数据_人影办_14-17','微博数据_人影办_18-20','微博数据_人影办_21-23']
+
     for filename in filename_list:
 
         df = pd.read_csv(filename+'.csv',lineterminator='\n')
@@ -68,5 +70,10 @@ if __name__ == '__main__':
             # Update DataFrame with the content for the current row
             df.at[index, "网页信息"] = web_content
             
+            if os.path.exists("{name}_带网页信息.csv".format(name=filename)):
+                header = False
+            else: 
+                header = True
+		# 保存csv文件
             # Save the updated DataFrame row by row (with append mode)
             df.iloc[[index]].to_csv("{name}_带网页信息.csv".format(name=filename), mode='a', header=not index, index=False)
