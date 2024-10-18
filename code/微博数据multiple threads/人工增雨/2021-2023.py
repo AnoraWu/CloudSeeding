@@ -20,7 +20,7 @@ def get_weibo(v_keyword, v_start_time, v_end_time, v_result_file):
 	
 	for page in range(1, max_page + 1):  # 前1页
 		print('开始爬取[从{}到{}],第{}页'.format(v_start_time, v_end_time, page))
-		sleep(random.uniform(0, 10))
+		sleep(random.uniform(0, 2))
 		# 请求地址
 		url = 'https://s.weibo.com/weibo'
 		# 请求参数
@@ -191,7 +191,7 @@ keyword = '人工增雨'
 # 最大页
 max_page = 50
 # cookie值 改为自己登录微博账号之后的cookie
-COOKIE_PC = 'SCF=AlBMOReBUvICT5u0wVPbCLnXr2HYblJrgoNylYIMlgJu2NRDAjNgGf4MrN_kgA-sB0O7Trf6H-sOsaASpA5rq4A.; SINAGLOBAL=2579903780436.4746.1727445568781; ULV=1727445568811:1:1:1:2579903780436.4746.1727445568781:; ALF=1730915190; SUB=_2A25KAG4mDeRhGeFH71oY8inIzD-IHXVpfO_urDV8PUJbkNANLVTzkW1Newwp3xBf9FFjLYwH_oeOSYMy-Yty9afH; SUBP=0033WrSXqPxfM725Ws9jqgMF55529P9D9W5QukEsSOyNmALA94RNE55o5JpX5KMhUgL.FoM4Shn4eoMXS0e2dJLoIEXLxKqL1hnL1K2LxKML1h.LBo.LxK-L1K.LBoqLxKqL1KqLB-qLxK-L1-qLB.2t; XSRF-TOKEN=jC4yo1GLJ9trTok6t7K3H1cY; WBPSESS=NyAZoRytRkRkEvTdNBasMCpcF454xBS481a8B0WCfxGrh0SiHHcZUKE2mCIAo_dIFlco4oRemv5tBGXRY-OG8RcsE1RTDdmodZU0twWIbo-6Otrw0gftnU6CeKoqYfB6PFYDRylAayHlI4Yv9bZl2w=='
+COOKIE_PC = 'SINAGLOBAL=2579903780436.4746.1727445568781; ULV=1727445568811:1:1:1:2579903780436.4746.1727445568781:; SUBP=0033WrSXqPxfM725Ws9jqgMF55529P9D9W5QukEsSOyNmALA94RNE55o5JpX5KMhUgL.FoM4Shn4eoMXS0e2dJLoIEXLxKqL1hnL1K2LxKML1h.LBo.LxK-L1K.LBoqLxKqL1KqLB-qLxK-L1-qLB.2t; SCF=AlBMOReBUvICT5u0wVPbCLnXr2HYblJrgoNylYIMlgJuXrObmzKVd5wosPY3AzGkHiznUpzQ2Zzlr8fxfeKOwaA.; SUB=_2A25KDf7QDeRhGeFH71oY8inIzD-IHXVpY34YrDV8PUNbmtANLUf5kW9Newwp35KTyk63nAQ4cP-mR5toJoeVO1Bl; ALF=1731271532; XSRF-TOKEN=baPlExuVXxDpIPtfQuBZbLSb; WBPSESS=NyAZoRytRkRkEvTdNBasMCpcF454xBS481a8B0WCfxGrh0SiHHcZUKE2mCIAo_dIFlco4oRemv5tBGXRY-OG8SFyt9-P3pJkmmuxVs-PhIYwAJRP2hTJAkhdnVfpUKVgfvDJ5nvRT6A7_RnxvYolOw=='
 # 设置起始时间
 start_time = datetime.datetime(2021, 1, 1, 0)
 end_time = datetime.datetime(2023, 12, 31, 0)
