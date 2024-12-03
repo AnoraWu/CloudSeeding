@@ -42,9 +42,9 @@ if __name__ == "__main__":
     logging.basicConfig(filename="log.txt", level=logging.ERROR)  # 设置日志文件
 
     os.chdir("/Users/anorawu/Documents/GitHub/CloudSeeding/data/气象局数据")
-    df = pd.read_csv("data_bureau_6.csv", encoding="utf-8")
+    df = pd.read_csv("data_bureau_8.csv", encoding="utf-8")
     
-    start_index = 0  # 设置开始分析的索引
+    start_index = 1092  # 设置开始分析的索引
 
     # 如果存在之前保存的索引，可以从中加载
     try:
@@ -55,7 +55,7 @@ if __name__ == "__main__":
 
     # 遍历每一行并处理
     os.chdir("/Users/anorawu/Documents/GitHub/CloudSeeding/data/气象局数据output")
-    with open("output_file_6.csv", "a", newline="", encoding="utf-8") as file:
+    with open("output_file_8.csv", "a", newline="", encoding="utf-8") as file:
         writer = csv.writer(file)
         # 写入列名
         if start_index == 0:
@@ -65,7 +65,7 @@ if __name__ == "__main__":
 
             try:
                 result = get_qwen_response(row)
-                print(6)
+                print(8)
                 print(index)
                 print(result)
                 if 'True' in result:
