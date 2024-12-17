@@ -1,7 +1,6 @@
 import geopandas as gpd
 import pandas as pd
 from geopy import distance
-import numpy as np
 
 # Set directories
 input_dir = r"D:/Git Local/CloudSeeding"
@@ -19,21 +18,10 @@ def get_four_points(longitude, latitude):
     lat1 = round(latitude * 2) / 2
     if lon1.is_integer(): lon1 += 0.5
     if lat1.is_integer(): lat1 += 0.5
-    if (lon1 == longitude) & (lat1 == latitude): return [(lon1, lat1)]
-    elif (lon1 == longitude):
-        lat2 = lat1 - 1 if lat1 > latitude else lat1 + 1
-        return [(lon1, lat1), (lon1, lat2)]
-    elif (lat1 == latitude):
-        lon2 = lon1 - 1 if lon1 > longitude else lon1 + 1
-        return [(lon1, lat1), (lon2, lat1)]
-    else:
-        lon2 = lon1 - 1 if lon1 > longitude else lon1 + 1
-        lat2 = lat1 - 1 if lat1 > latitude else lat1 + 1
-        return [(lon1, lat1), (lon1, lat2), (lon2, lat1), (lon2, lat2)]
 
-# Helper function:  calculate sum or return NaN
-def safe_sum(series):
-    return np.nan if series.isna().any() else series.sum()
+    lon2 = lon1 - 1 if lon1 > longitude else lon1 + 1
+    lat2 = lat1 - 1 if lat1 > latitude else lat1 + 1
+    return [(lon1, lat1), (lon1, lat2), (lon2, lat1), (lon2, lat2)]
 
 # Check for already processed rows
 try:
@@ -86,13 +74,7 @@ for index, row in df_pt.iterrows():
 
     # Combine all data for the point
     cloud_df = pd.concat(cloud_data, ignore_index=True)
-
-    grouped = cloud_df.groupby(['year', 'month', 'day']).agg({
-    'cloud_optical_thickness': safe_sum,
-    'cloud_mask_fraction': safe_sum
-    })
-
-    # Apply weighted calculations
+    grouped = cloud_df.groupby(['year', 'month', 'day']).sum(min_count=4)    
     grouped['wt_cloud_optical_thickness'] = grouped['cloud_optical_thickness'] / all_weight
     grouped['wt_cloud_mask_fraction'] = grouped['cloud_mask_fraction'] / all_weight
 
