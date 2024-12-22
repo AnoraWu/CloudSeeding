@@ -40,7 +40,7 @@ for index, row in df_pt.iterrows():
     print(f"Processing row {index}, points: {pts_list}")
 
     cloud_data = []
-    all_weight = []
+    all_weight = 0
 
     for pts in pts_list:
 
@@ -68,7 +68,7 @@ for index, row in df_pt.iterrows():
         weight = 1 / (dist * dist) 
         month_df['cloud_optical_thickness'] = weight*month_df['cloud_optical_thickness']
         month_df['cloud_mask_fraction'] = weight*month_df['cloud_mask_fraction']
-        all_weight.append(weight)
+        all_weight += weight
 
         cloud_data.append(month_df)
 
