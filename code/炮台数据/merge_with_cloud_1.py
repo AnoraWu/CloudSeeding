@@ -1,3 +1,11 @@
+"""
+Script Name: merge_with_cloud.py
+Author: Wanru Wu
+Date: Jan 2, 2025
+Purpose: Merge with 'cloud_optical_thickness' and 'cloud_mask_fraction' 
+"""
+
+
 import geopandas as gpd
 import pandas as pd
 from geopy import distance
@@ -5,7 +13,7 @@ from geopy import distance
 # Set directories
 input_dir = r"D:/Git Local/CloudSeeding"
 modis_dir = r"C:/Users/Anora/BFI Dropbox/Wanru Wu/MODIS"
-output_file = f"{input_dir}\processed_cloud_data.csv"
+output_file = f"{input_dir}/data/炮台数据/processed_cloud_data_1.csv"
 
 # Load points data
 df_pt = gpd.read_file(f"{input_dir}\data\cleaned_炮台数据\cleaned_炮台数据.shp")
