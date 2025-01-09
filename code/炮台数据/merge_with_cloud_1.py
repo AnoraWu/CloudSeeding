@@ -2,22 +2,19 @@
 Script Name: merge_with_cloud.py
 Author: Wanru Wu
 Date: Jan 2, 2025
-Purpose: Merge with 'cloud_optical_thickness' and 'cloud_mask_fraction' 
+Purpose: Merge fort data with 'cloud_optical_thickness' and 'cloud_mask_fraction' 
 """
 
 
 import geopandas as gpd
 import pandas as pd
+import calendar
+import numpy as np
+import warnings
+import csv
 from geopy import distance
 
-# Set directories
-input_dir = r"D:/Git Local/CloudSeeding"
-modis_dir = r"C:/Users/Anora/BFI Dropbox/Wanru Wu/MODIS"
-output_file = f"{input_dir}/data/炮台数据/processed_cloud_data_1.csv"
-
-# Load points data
-df_pt = gpd.read_file(f"{input_dir}\data\cleaned_炮台数据\cleaned_炮台数据.shp")
-df_pt = pd.DataFrame(df_pt.drop(columns='geometry'))
+warnings.filterwarnings("ignore")
 
 
 # Helper function: get four surrounding points
@@ -31,69 +28,93 @@ def get_four_points(longitude, latitude):
     lat2 = lat1 - 1 if lat1 > latitude else lat1 + 1
     return [(lon1, lat1), (lon1, lat2), (lon2, lat1), (lon2, lat2)]
 
-# Check for already processed rows
-try:
-    processed_rows = pd.read_csv(output_file, usecols=['index'])['index'].tolist()
-except FileNotFoundError:
-    processed_rows = []
+if __name__ == "__main__":
+    
+    # Set directories
+    data_dir = r"/Users/anorawu/BFI Dropbox/Wanru Wu/Cloudseeding/data"
 
-# Main processing loop
-for index, row in df_pt.iterrows():
-    # Skip if already processed
-    if index in processed_rows:
-        continue
+    # cloud thickness and fraction
+    modis_dir = f"{data_dir}/MODIS"
+    output_file = f"{data_dir}/炮台数据/processed_cloud_data_1.csv"
 
-    # Get the points on the coordinate grid
-    pts_list = get_four_points(row["longitude"], row["latitude"])
-    print(f"Processing row {index}, points: {pts_list}")
+    # Load points data
+    df_pt = pd.read_csv(f"{data_dir}/炮台数据/cleaned_炮台数据.csv")
 
-    cloud_data = []
-    all_weight = []
-
-    for pts in pts_list:
-
-        month_data = []
-
-        for year in range(2011, 2024):
-            for month in range(1, 13):
-                # Construct file path
-                file_path = f"{modis_dir}/{year}/MODIS{year}{month:02}.dta"
-                temp_df = pd.read_stata(file_path)
-
-                condition = (temp_df['longitude'] == pts[0]) & (temp_df['latitude'] == pts[1])
-                temp_df = temp_df[condition]
-
-                # Remove abnormal date
-                if (year == 2020) and (month == 6):
-                    temp_df = temp_df[temp_df['day'] != 31]
-
-                month_data.append(temp_df)
+    # Open a CSV file in append mode
+    with open(output_file, mode='a', newline='') as f:
+        writer = csv.writer(f)
         
-        # Concat monthly data and calculate weights
-        month_df = pd.concat(month_data, ignore_index=True)
+        # Write header if file is empty
+        if f.tell() == 0: 
+            writer.writerow(['longitude', 'latitude', 'operation_year', 
+                            'operation_month', 'operation_day', 'first_operation_date',
+                            'year', 'month', 'day', 
+                            'wt_cloud_optical_thickness', 'wt_cloud_mask_fraction'])
 
-        dist = distance.distance(tuple(reversed(pts)), (row["latitude"], row["longitude"])).km
-        weight = 1 / (dist * dist) 
-        month_df['cloud_optical_thickness'] = weight*month_df['cloud_optical_thickness']
-        month_df['cloud_mask_fraction'] = weight*month_df['cloud_mask_fraction']
-        all_weight.append(weight)
+        for index, row in df_pt.iterrows():
+            pts_list = get_four_points(row["longitude"], row["latitude"])
+            print(f"Processing row {index}, points: {pts_list}")
 
-        cloud_data.append(month_df)
+            for year in range(2011, 2024):
+                for month in range(1, 13):
 
-    # Combine all data for the point
-    cloud_df = pd.concat(cloud_data, ignore_index=True)
-    grouped = cloud_df.groupby(['year', 'month', 'day']).sum(min_count=4)    
-    grouped['wt_cloud_optical_thickness'] = grouped['cloud_optical_thickness'] / all_weight
-    grouped['wt_cloud_mask_fraction'] = grouped['cloud_mask_fraction'] / all_weight
+                    # Load cloud data
+                    file_path = f"{modis_dir}/{year}/MODIS{year}{month:02}.dta"
+                    cloud_df_month = pd.read_stata(file_path)
 
-    # Prepare the final DataFrame
-    final_df = grouped.reset_index()[['year', 'month', 'day', 'wt_cloud_optical_thickness', 'wt_cloud_mask_fraction']]
-    final_df['latitude'] = row["latitude"]
-    final_df['longitude'] = row["longitude"]
-    final_df['index'] = index  # Add index for checkpointing
+                    # Clean the data
+                    # Convert missing value to zero, according to data documentation
+                    cloud_df_month.loc[cloud_df_month['cloud_optical_thickness'].isna(), 'cloud_optical_thickness'] = 0
+                    cloud_df_month.loc[cloud_df_month['cloud_mask_fraction'].isna(), 'cloud_mask_fraction'] = 0
 
-    # Append to CSV
-    write_mode = 'w' if index == 0 and not processed_rows else 'a'
-    final_df.to_csv(output_file, mode=write_mode, index=False, header=write_mode == 'w')
+                    # Remove abnormal date
+                    if (year == 2020) and (month == 6):
+                        cloud_df_month = cloud_df_month[cloud_df_month['day'] != 31]
+                    if (year == 2013) and (month == 11):
+                        cloud_df_month['day'] = cloud_df_month['day']-100
 
-    print(f"Row {index} processed and written to file.")
+
+                    days_in_month = calendar.monthrange(year, month)[1]
+                    for day in range(1, days_in_month + 1):
+                        cloud_df_day = cloud_df_month[cloud_df_month['day']==day]
+                        cloud_df_day_pts = cloud_df_day[
+                            cloud_df_day[['longitude', 'latitude']].apply(tuple, axis=1).isin(pts_list)]
+                        
+                        num_pts = len(cloud_df_day_pts)
+                        if num_pts == 3:
+                            print(num_pts)
+
+                        if len(cloud_df_day_pts) > 0: # Only process if points are available
+                            # Compute weights based on distance
+                            for idx, pt in cloud_df_day_pts.iterrows():
+                                dist = distance.distance((pt["latitude"], pt["longitude"]), (row["latitude"], row["longitude"])).km
+                                weight = 1 / (dist * dist) 
+                                cloud_df_day_pts.loc[idx,'weight'] = weight
+                            
+                            # Did not count for missing values bc all missing values have been replaced by zero
+                            wt_cloud_optical_thickness = np.average(cloud_df_day_pts['cloud_optical_thickness'], weights=cloud_df_day_pts['weight'])
+                            wt_cloud_mask_fraction = np.average(cloud_df_day_pts['cloud_mask_fraction'], weights=cloud_df_day_pts['weight'])
+
+
+                            writer.writerow([
+                                row['longitude'], row['latitude'], 
+                                row['operation_year'], row['operation_month'], row['operation_day'],	
+                                row['first_operation_date'], year, month, day,
+                                wt_cloud_optical_thickness, wt_cloud_mask_fraction
+                            ])
+
+            
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
