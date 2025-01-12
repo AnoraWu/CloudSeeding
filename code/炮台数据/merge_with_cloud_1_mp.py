@@ -1,5 +1,5 @@
 """
-Script Name: merge_with_cloud.py
+Script Name: merge_with_cloud_1_mp.py
 Author: Wanru Wu
 Date: Jan 8, 2025
 Purpose: Merge fort data with 'cloud_optical_thickness' and 'cloud_mask_fraction' 

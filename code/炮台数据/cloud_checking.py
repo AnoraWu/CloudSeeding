@@ -24,9 +24,9 @@ if __name__ == "__main__":
 
     ### If true, then check the data
     check_modis = False
-    check_weather_station = False
+    check_weather_station = True
     check_merra = False
-    check_era5 = True
+    check_era5 = False
 
     ### Check MODIS
     if check_modis:
@@ -78,85 +78,35 @@ if __name__ == "__main__":
 
         print("\n\n\n check weather station \n\n\n")
 
+        # Check if there are any missing days for each StationId
+        def check_continuity_with_gaps(group):
+            first_date = group['Date'].min()
+            full_date_range = pd.date_range(start=first_date, end=group['Date'].max())
+            actual_dates = group['Date']
+            missing_dates = set(full_date_range) - set(actual_dates)
+            
+            if not missing_dates:
+                return "Continuous"
+            else:
+                return f"Missing Dates: {len(missing_dates)}"
+
         try:
             # Get the data frame
             temp_df = pd.read_stata(weather_station_dir)
-            stationids = list(temp_df['StationId'].unique())
-            stationids.remove(999999.0)
+            temp_df = temp_df[temp_df['StationId']!=999999.0]
+            temp_df.rename(columns={"Year": "year", "Mon": "month", "Day": "day"},inplace=True)
 
-            # Initialize summaries
-            station_summary = {
-                '1-1000': 0,
-                '1001-2000': 0,
-                '2001-3000': 0,
-                '3001-4000': 0,
-                '4001-4746': 0,
-                '4747': 0,
-                '4748': 0,
-                '4749': 0
-            }
+            # Create a Date column for easier processing
+            temp_df['Date'] = pd.to_datetime(temp_df[['year', 'month', 'day']])
+            temp_df = temp_df.sort_values(by=['StationId', 'Date']).reset_index(drop=True)
 
-            # Create a dictionary to track completeness for each column
-            column_completeness_summary = {}
-            for col in temp_df.columns:
-                if col != 'StationId':  # Exclude StationId
-                    column_completeness_summary[col] = {
-                        '1-50%': 0,
-                        '51-75%': 0,
-                        '76-90%': 0,
-                        '91-100%': 0
-                    }
+            # Apply the function and summarize results
+            continuity_summary = temp_df.groupby('StationId').apply(check_continuity_with_gaps)
 
-            # For each station, check data availability
-            for id in stationids:
-                temp_df_id = temp_df[temp_df['StationId'] == id]
-                days = len(temp_df_id)
-
-                # Categorize by days count
-                if 1 <= days <= 1000:
-                    station_summary['1-1000'] += 1
-                elif 1001 <= days <= 2000:
-                    station_summary['1001-2000'] += 1
-                elif 2001 <= days <= 3000:
-                    station_summary['2001-3000'] += 1
-                elif 3001 <= days <= 4000:
-                    station_summary['3001-4000'] += 1
-                elif 4001 <= days <= 4746:
-                    station_summary['4001-4746'] += 1
-                elif days == 4747:
-                    station_summary['4747'] += 1
-                elif days == 4748:
-                    station_summary['4748'] += 1
-                elif days == 4749:
-                    station_summary['4749'] += 1
-
-                # Calculate completeness percentage for each column
-                for col in temp_df.columns:
-                    if col != 'StationId':  # Exclude StationId
-                        completeness_percent = (temp_df_id[col].notnull().sum() / len(temp_df_id)) * 100
-
-                        # Categorize by completeness percentage
-                        if 1 <= completeness_percent <= 50:
-                            column_completeness_summary[col]['1-50%'] += 1
-                        elif 51 <= completeness_percent <= 75:
-                            column_completeness_summary[col]['51-75%'] += 1
-                        elif 76 <= completeness_percent <= 90:
-                            column_completeness_summary[col]['76-90%'] += 1
-                        elif 91 <= completeness_percent <= 100:
-                            column_completeness_summary[col]['91-100%'] += 1
-
-            # Print summary results
-            print("\nSummary of Weather Station Data Completeness (Days Count):")
-            print("Category      | Number of Stations")
-            print("-------------------------------")
-            for category, count in station_summary.items():
-                print(f"{category:<12} | {count}")
-
-            print("\nSummary of Weather Station Data Completeness (% Available Data by Column):")
-            print("Column Name     | 1-50% | 51-75% | 76-90% | 91-100%")
-            print("-----------------------------------------------------")
-            for col, completeness in column_completeness_summary.items():
-                print(f"{col:<15} | {completeness['1-50%']:<6} | {completeness['51-75%']:<6} | {completeness['76-90%']:<6} | {completeness['91-100%']:<6}")
+            # Print the results
+            for station_id, result in continuity_summary.items():
+                if result != "Continuous":
+                    print(f"StationId: {station_id}, Status: {result}")     
         
         except Exception as e:
             print(e)

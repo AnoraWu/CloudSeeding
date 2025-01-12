@@ -88,7 +88,7 @@ if __name__ == "__main__":
 
     fort_data = pd.read_csv(f"{data_dir}/炮台数据/cleaned_炮台数据.csv")
     fort_point = fort_data[["longitude", "latitude"]].drop_duplicates()
-    fort_point["index"] = fort_point.index
+    fort_point["index"] = fort_point.reset_index(inplace=True).index
 
     rain_data = pd.read_stata(f"{data_dir}/weatherstation_2010_2022.dta")
     rain_data.dropna(subset=["Lat", "Lon", "Year", "Mon", "Day"], inplace=True)
@@ -128,3 +128,6 @@ if __name__ == "__main__":
             process_row,
             [(row, rain_gdf, fort_gdf, buffer_radius, output_file) for _, row in fort_gdf.iterrows()],
         )
+
+
+
