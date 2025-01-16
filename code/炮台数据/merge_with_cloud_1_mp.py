@@ -109,7 +109,7 @@ if __name__ == "__main__":
                             'wt_cloud_optical_thickness', 'wt_cloud_mask_fraction'])
 
     # Use multiprocessing
-    num_workers = cpu_count() - 5  # Use all available cores minus 5
+    num_workers = max(1, cpu_count() - 5)
     with Pool(num_workers) as pool:
         # Map rows to worker processes
         pool.starmap(

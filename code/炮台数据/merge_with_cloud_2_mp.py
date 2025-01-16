@@ -17,7 +17,7 @@ from multiprocessing import Pool, cpu_count
 warnings.filterwarnings("ignore")
 
 
-def process_row(row, rain_gdf, fort_gdf, buffer_radius, output_file):
+def process_row(row, rain_gdf, buffer_radius, output_file):
     print(f"Processing fort index: {row['index']}")
 
     results = []
@@ -126,7 +126,7 @@ if __name__ == "__main__":
     with Pool(num_workers) as pool:
         pool.starmap(
             process_row,
-            [(row, rain_gdf, fort_gdf, buffer_radius, output_file) for _, row in fort_gdf.iterrows()],
+            [(row, rain_gdf, buffer_radius, output_file) for _, row in fort_gdf.iterrows()],
         )
 
 
