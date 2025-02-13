@@ -24,9 +24,10 @@ if __name__ == "__main__":
 
     ### If true, then check the data
     check_modis = False
-    check_weather_station = True
+    check_weather_station = False
     check_merra = False
     check_era5 = False
+    check_gpm = True
 
     ### Check MODIS
     if check_modis:
@@ -243,6 +244,53 @@ if __name__ == "__main__":
 
         except Exception as e:
             print(e)
+
+    if check_gpm:
+        # Define latitude and longitude ranges
+        lat_complete_temp = np.arange(17.95, 54.95, 0.1).tolist()
+        lat_complete = [round(x,2) for x in lat_complete_temp]
+        lon_complete_temp = np.arange(73.05, 134.95, 0.1).tolist()
+        lon_complete = [round(x,2) for x in lon_complete_temp]
+
+
+        print("\n\n\n check modis \n\n\n")
+
+        for year in range(2010, 2024):
+            for month in range(1, 13):
+                # read the precipitation data
+                rain_data = pd.read_stata(rf"{data_dir}/GPM/{year}/{year}{month:02}.dta")
+                rain_data.dropna(inplace=True)
+
+                # Check if dates are complete
+                days_in_month = range(1,calendar.monthrange(year, month)[1]+1)
+
+                # Extract all dates
+                date_list     = list(rain_data['day'].unique())
+
+                # Check if all dates are available
+                missing_days = [item for item in days_in_month if item not in date_list]
+                if missing_days:
+                    print(f"In year {year} and month {month}, the missing days are", missing_days)
+                else:
+                    print(f"In year {year} and month {month}, days are complete")
+
+                # Check if latitudes and longitudes are complete
+                lon_list = [round(x,2) for x in rain_data['lon'].unique()]
+                lat_list = [round(x,2) for x in rain_data['lat'].unique()]
+
+                missing_lat = [item for item in lat_complete if item not in lat_list]
+                missing_lon = [item for item in lon_complete if item not in lon_list]
+                if missing_lat:
+                    print(f"In year {year} and month {month}, the missing latitudes are", missing_lat)
+                else:
+                    print(f"In year {year} and month {month}, latitudes are complete")
+                if missing_lon:
+                    print(f"In year {year} and month {month}, the missing longitudes are", missing_lon)
+                else:
+                    print(f"In year {year} and month {month}, longitudes are complete")
+
+
+
 
 
 
