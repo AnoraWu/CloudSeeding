@@ -8,7 +8,7 @@ cd "/Users/anorawu/BFI Dropbox/Wanru Wu/Cloudseeding/output/抗议数据"
 
 
 ********************************************************
-*************** county day regression ************
+***************** county day regression ****************
 ********************************************************
 
 label var n_cloudseeding "num of cloudseeding"
@@ -18,11 +18,24 @@ label var size_rfa "size of rfa protests"
 label var size_weibo "size of weibo protests"
 label var size_original_weibo "size of weibo protests (original)"
 label var size_original_rfa "size of rfa protests (original)"
-label var rainfall "rainfall"
 
 
 **** use the original size variable ****
 preserve 
+
+xtset adcode date
+
+drop if city == 1
+
+* use the previous three day mean rainfall to avoid reverse causality
+forvalues i = 1(1)3{
+	bys adcode (date): gen rain_`i' = L`i'.rainfall
+}
+drop rainfall
+gen rainfall = (rain_1 + rain_2 + rain_3)/3
+label var rainfall "rainfall"
+drop rain_*
+
 gen interaction_weibo = size_original_weibo * n_prt_weibo
 label var interaction_weibo "protests (weibo) \times size"
 
@@ -30,7 +43,7 @@ gen interaction_rfa = size_original_rfa * n_prt_rfa
 label var interaction_rfa "protests (rfa) \times size"
 
 
-xtset adcode date
+
 
 *** no fixed effects
 * weibo
@@ -189,14 +202,24 @@ label var rainfall "rainfall"
 
 **** use the original size variable ****
 preserve 
+
+xtset citycode date
+
+* use the previous three day mean rainfall to avoid reverse causality
+forvalues i = 1(1)3{
+	bys citycode (date): gen rain_`i' = L`i'.rainfall
+}
+drop rainfall
+gen rainfall = (rain_1 + rain_2 + rain_3)/3
+label var rainfall "rainfall"
+drop rain_*
+
 gen interaction_weibo = size_original_weibo * n_prt_weibo
 label var interaction_weibo "protests (weibo) \times size"
 
 gen interaction_rfa = size_original_rfa * n_prt_rfa
 label var interaction_rfa "protests (rfa) \times size"
 
-
-xtset citycode date
 
 *** no fixed effects
 * weibo
@@ -366,14 +389,17 @@ label var rainfall "rainfall"
 
 **** use the original size variable ****
 preserve 
+
+xtset citycode week
+
+* use lasst week's rainfall
+replace rainfall = L.rainfall
+
 gen interaction_weibo = size_original_weibo * n_prt_weibo
 label var interaction_weibo "protests (weibo) \times size"
 
 gen interaction_rfa = size_original_rfa * n_prt_rfa
 label var interaction_rfa "protests (rfa) \times size"
-
-
-xtset citycode week
 
 *** no fixed effects
 * weibo
@@ -493,7 +519,7 @@ esttab using "4c.tex", replace   ///
  star(* 0.10 ** 0.05 *** 0.01) ///
  label noobs nonotes nomtitle collabels(none) compress ///
  scalars("r2 R-squared" "TE Time Effects" "FE Fixed effects") sfmt(3 0) ///
- title("city-week panel regression, clustered at city level, city and day fixed effects")
+ title("city-week panel regression, clustered at city level, city and week fixed effects")
 
 restore
 

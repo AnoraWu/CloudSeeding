@@ -406,7 +406,7 @@ esttab using "3c.tex", replace   ///
  star(* 0.10 ** 0.05 *** 0.01) ///
  label noobs nonotes nomtitle collabels(none) compress ///
  scalars("r2 R-squared" "TE Time Effects" "FE Fixed effects") sfmt(3 0) ///
- title("city-day panel regression, clustered at city level, city and day fixed effects")
+ title("city-day panel regression, clustered at city level, city and week fixed effects")
 
 restore
 
