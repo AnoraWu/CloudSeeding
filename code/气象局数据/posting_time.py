@@ -40,3 +40,12 @@ df4["气象局公告内容"] = df4["气象局公告内容"].str.replace(r'\s+', 
 df4.drop_duplicates(inplace=True)
 df5 = df3.merge(df4, on='气象局公告内容', how='left')
 df5.to_csv(f"{folder}/need_manual_issue_time_url.csv")
+
+# manually add issue time to need_manual_issue_time_url.csv and generate need_manual_issue_time_url_cleaned.csv
+df6 = pd.read_csv(f"{folder}/need_manual_issue_time_url_cleaned.csv")
+df7 = pd.read_csv(f"{folder}/result_text_issuetime.csv")
+
+final_data = df7.merge(df6[['index','issue_time2']], on='index', how='left')
+final_data['issue_time'] = final_data[['issue_time','issue_time2']].bfill(axis=1).iloc[:,0]
+final_data.drop(columns=['Unnamed: 0', 'issue_time2'],inplace=True)
+final_data.to_csv(f"{folder}/result_text_issuetime_cleaned.csv")
