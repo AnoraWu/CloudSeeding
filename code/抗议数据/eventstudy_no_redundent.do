@@ -113,8 +113,7 @@ replace rainfall =. if rain_1 ==. | rain_2 ==. | rain_3 ==.
 label var rainfall "rainfall"
 drop rain_*
 
-* drop redundent data
-keep if missing(to_day) | inrange(to_day, -7, 7)
+
 
 * generate event study variable
 forvalues k = 7(-1)1{
