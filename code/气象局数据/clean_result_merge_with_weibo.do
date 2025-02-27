@@ -1,4 +1,4 @@
-cd "/Users/anorawu/BFI Dropbox/Wanru Wu/Cloudseeding/data/气象局数据/人工处理"
+cd "C:\Users\Anora\OneDrive\Desktop\data"
 import delimited "result_text_issuetime_cleaned.csv", clear 
 
 drop v1 index
@@ -116,6 +116,7 @@ replace county = "" if county == "大部"
 replace county = "" if county == "北部"
 replace county = "" if county == "南部"
 replace county = "" if county == "东部"
+replace county = "" if county == "西部"
 replace county = "" if county == "玛可河林场"
 replace county = "" if county == "云龙水库"
 
@@ -171,11 +172,9 @@ replace county = "" if county == "祁连山南麓地区"
 replace county = "" if county == "新青林业局"
 replace county = "" if county == "长白山保护开发区"
 
-replace county = "万盛经济技术开发区" if county == "万盛经开区"
 replace county = "徐闻县" if county == "海安镇" & city == "湛江市"
 replace county = "竹溪县" if city == "竹溪县"
 replace city = "十堰市" if county == "竹溪县"
-
 
 replace county = "" if county == "螺狮山"
 replace county = "荆州区" if county == "弥市" & city == "荆州市"
@@ -197,79 +196,314 @@ replace county = "天峨县" if county == "向阳乡"
 replace county = "" if county == "九洞乡"
 replace county = "" if county == "摩天岭顶"
 
-duplicates drop prov city county op_date,force
-replace county = "placeholder" if county == ""
+replace county = "鄂温克族自治旗" if county == "鄂温克旗"
 
-tempfile qixiangjv
-save `qixiangjv'
+replace county = "" if county == "延边州" & city == "延边朝鲜族自治州"
 
-use "skeleton_merged2024.dta" ,clear
-replace county = "placeholder" if county == ""
-merge m:1 prov city county year month day using `qixiangjv'
+replace county = "九台区" if county == "龙嘉机场" & city == "长春市"
+replace county = "木里藏族自治县" if county == "木里县" & city == "凉山彝族自治州"
 
+replace county = "" if city == "宜宾市" & county == "三江新区"
+replace county = "沾化区" if county == "沾化县" & city == "滨州市"
+replace county = "邹平市" if county == "邹平县" & city == "滨州市"
+replace county = "" if county == "度假区" & city == "聊城市"
+replace county = "即墨区" if county == "即墨市" & city == "青岛市"
+replace county = "雷州市" if county == "乌石镇" & city == "湛江市"
 
-*** merge those without counties ***
-preserve 
-tempfile merge1
+replace county = "金秀瑶族自治县" if county == "金秀县" & city == "来宾市"
+replace county = "恭城瑶族自治县" if county == "恭城县" & city == "桂林市"
+replace county = "荔浦市" if county == "荔浦县" & city == "桂林市"
+replace county = "雷州市" if county == "乌石镇" & city == "湛江市"
+replace county = "横州市" if county == "横县" & city == "南宁市"
+replace county = "长洲区" if county == "倒水镇" & city == "梧州市"
+replace county = "大化瑶族自治县" if county == "大化县" & city == "河池市"
+replace county = "巴马瑶族自治县" if county == "巴马县" & city == "河池市"
+replace county = "环江毛南族自治县" if county == "环江县" & city == "河池市"
+replace county = "平果市" if county == "平果县" & city == "百色市"
 
-keep if _merge == 2
-drop _merge
-keep if county==""
+replace county = "苍梧县" if county == "六堡区"
+replace city = "梧州市" if county == "苍梧县"
 
-save `merge1'
-restore 
+replace county = "藤县" if county == "天平镇"
+replace city = "梧州市" if county == "藤县"
 
-drop _merge
-drop if county!=""
-merge m:1 prov city year month day using `merge1'
+replace county = "钦南区" if county == "黄屋屯镇"
+replace county = "宿城区" if county == "双庄街道"
+replace county = "宿城区" if county == "支口街道"
+replace county = "宿豫区" if county == "晓店镇"
 
-
-
-
-
-replace county = "荔浦市" if county == "荔浦县"
-
-
-replace county = "荔浦市" if county == "荔浦县"
 replace county = "沭阳县" if county == "沐阳县"
+replace county = "湖滨区" if county == "湖滨新区"
+replace county = "宿城区" if county == "蔡集镇"
 
+replace city = "徐州市" if prov == "江苏省" & county == "铜山区"
+replace county = "" if county == "骆马湖"
 
-replace city = "九江市" if county == "赛阳镇"
-replace county = "濂溪区" if county == "赛阳镇"
-replace county = "庐山市" if city == "庐山市"
+replace county = "上犹县" if county == "东山镇" & city == "上犹县"
+replace city = "赣州市" if county == "上犹县"
 
-replace county = "井冈山市" if county == "新城镇"
+replace county = "" if county == "上饶县"
+replace county = "广丰区" if county == "广丰县"
+
+replace county = "井冈山市" if county == "新城镇" & city == "井冈山市"
 replace city = "吉安市" if county == "井冈山市"
+replace county = "袁州区" if county == "彬江镇"& city == "宜春市"
+
+replace county = "濂溪区" if county == "赛阳镇" & city == "庐山市"
+replace city = "九江市" if county == "濂溪区" & prov == "江西省"
+
+replace county = "瑞昌市" if county == "高丰镇" & city == "瑞昌市"
+replace city = "九江市" if county == "瑞昌市" & prov == "江西省"
+
+replace county = "龙南市" if county == "龙南县" & city == "赣州市"
+replace county = "余江区" if county == "余江县"
+replace county = "芷江侗族自治县" if county == "芷江县"
+replace county = "靖州苗族侗族自治县" if county == "靖州县"
+replace county = "湘乡市" if county == "湘乡"
+
+replace county = "" if county == "山河水库"
+replace county = "" if county == "彬州市"
+replace county = "宁乡市" if county == "宁乡县"
+
+replace county = "喀喇沁左翼蒙古族自治县" if county == "喀左县"
+replace county = "本溪满族自治县" if county == "本溪县"
+replace county = "桓仁满族自治县" if county == "桓仁县"
+replace county = "大柴旦行政委员会" if county == "大柴旦行政区"
+replace city = "海东市" if county == "本溪县"
+replace county = "本溪满族自治县" if county == "本溪县"
+replace county = "本溪满族自治县" if county == "本溪县"
+replace county = "本溪满族自治县" if county == "本溪县"
+replace county = "本溪满族自治县" if county == "本溪县"
+
+replace county = "" if county == "万盛经开区"
 
 replace county = "沾化区" if county == "沾化县"
-replace county = "邹平市" if county == "邹平县"
 replace county = "湟中区" if county == "湟中县"
 
-drop location
+* cannot identify the county
+drop if county == "共和乡"
+
+replace county = "同仁市" if county == "同仁县"
+replace county = "河南蒙古族自治县" if county == "河南县"
+
+replace county = "鄂伦春自治旗" if county == "松岭区"
+replace city = "呼伦贝尔市" if county == "鄂伦春自治旗"
+
+replace county = "漠河市" if county == "漠河县"
+replace county = "杜尔伯特蒙古族自治县" if county == "一心乡"
+replace county = "杜尔伯特蒙古族自治县" if county == "他拉哈镇"
+replace county = "让胡路区" if county == "喇嘛甸镇"
+replace county = "杜尔伯特蒙古族自治县" if county == "胡吉吐莫镇"
+replace county = "杜尔伯特蒙古族自治县" if county == "连环湖镇"
+replace county = "林甸县" if county == "花园乡" & city == "大庆市"
+replace county = "嫩江市" if county == "嫩江县"
+
+replace county = "万荣县" if city == "万荣县"
+replace city = "运城市" if county == "万荣县"
+
+replace city = "临夏回族自治州" if city == "临夏州"
+
+replace county = "临夏市" if city == "临夏市"
+replace city = "临夏回族自治州" if county == "临夏市"
+
+replace county = "五常市" if city == "五常市"
+replace city = "哈尔滨市" if county == "五常市"
+
+replace county = "仙桃市" if city == "仙桃市"
+replace city = "" if county == "仙桃市"
+
+replace county = "公主岭市" if city == "公主岭市"
+replace city = "长春市" if county == "公主岭市"
+
+replace county = "兴安县" if city == "兴安县"
+replace city = "桂林市" if county == "兴安县"
+
+replace county = "凤山县" if city == "凤山县"
+replace city = "河池市" if county == "凤山县"
+
+replace county = "北流市" if city == "北流市"
+replace city = "玉林市" if county == "北流市"
+
+replace county = "大新县" if city == "大新县"
+replace city = "崇左市" if county == "大新县"
+
+replace county = "天峨县" if city == "天峨县"
+replace city = "河池市" if county == "天峨县"
+
+replace county = "天门市" if city == "天门市"
+replace city = "" if county == "天门市"
+
+replace county = "宁乡市" if city == "宁乡市"
+replace city = "长沙市" if county == "宁乡市"
+
+replace county = "安丘市" if city == "安丘市"
+replace city = "潍坊市" if county == "安丘市"
+
+replace county = "安化县" if city == "安化县"
+replace city = "益阳市" if county == "安化县"
+
+replace county = "庐山市" if city == "庐山市"
+replace city = "九江市" if county == "庐山市"
+
+replace county = "延寿县" if city == "延寿县"
+replace city = "哈尔滨市" if county == "延寿县"
+
+replace county = "建始县" if city == "建始县"
+replace city = "恩施土家族苗族自治州" if county == "建始县"
+
+replace county = "慈利县" if city == "慈利县"
+replace city = "张家界市" if county == "慈利县"
+
+replace county = "扶余市" if city == "扶余市"
+replace city = "松原市" if county == "扶余市"
+
+drop if city == "新疆生产建设兵团"
+
+replace county = "格尔木市" if city == "格尔木市"
+replace city = "海西蒙古族藏族自治州" if county == "格尔木市"
+
+replace county = "汉川市" if city == "汉川市"
+replace city = "孝感市" if county == "汉川市"
+
+replace county = "汪清县" if city == "汪清县"
+replace city = "延边朝鲜族自治州" if county == "汪清县"
+
+replace county = "沅陵县" if city == "沅陵县"
+replace city = "怀化市" if county == "沅陵县"
+
+replace county = "潜江市" if city == "潜江市"
+replace city = "" if county == "潜江市"
+
+replace county = "灵山县" if city == "灵山县"
+replace city = "钦州市" if county == "灵山县"
+
+replace county = "珲春市" if city == "珲春市"
+replace city = "延边朝鲜族自治州" if county == "珲春市"
+
+replace county = "瑞金市" if city == "瑞金市"
+replace city = "赣州市" if county == "瑞金市"
+
+replace city = "甘南藏族自治州" if city == "甘南州"
+
+replace county = "磐石市" if city == "磐石市"
+replace city = "吉林市" if county == "磐石市"
+
+replace county = "肥城市" if city == "肥城市"
+replace city = "泰安市" if county == "肥城市"
+
+drop if city == "西南部"
+drop if city == "长白山市"
+drop if city == "黄河谷地"
+
+replace county = "青州市" if city == "青州市"
+replace city = "潍坊市" if county == "青州市"
+
+replace county = "" if county == "郴州市"
+
+replace city = "三门峡市" if county == "湖滨区"
+drop if city == "聊城市" & county == "高新区"
+
+duplicates drop prov city county op_date,force
+
+* drop province level data, as those are not informative
+drop if city == "" & county == "" & prov != "重庆市" & prov != "上海市" & prov != "天津市" & prov != "北京市"
 
 tempfile qixiangjv
 save `qixiangjv'
 
-use "/Users/anorawu/BFI Dropbox/Wanru Wu/Cloudseeding/Cloud Seeding/data/tem/cloudseeding.dta", clear
-drop if published_time == ""
-gen published_time2 = word(published_time, 1)
-replace published_time2 = subinstr(published_time2, "年", "-", .) 
-replace published_time2 = subinstr(published_time2, "月", "-", .) 
-replace published_time2 = subinstr(published_time2, "日", "", .) 
 
-replace published_time2 = string(year)+ "-" + published_time2 if substr(published_time2,1,2) != "20"
-gen pub_date  = date(published_time2, "YMD")
-gen pub_year  = year(pub_date)
-gen pub_month = month(pub_date)
-gen pub_day   = day(pub_date)
+*** expand cities without counties ***
+preserve 
 
-drop published_time2 published_time
+* specify the cities that needs expansion in the file `cities'
+keep if county == ""
+keep city prov
+duplicates drop
+tempfile cities
+save `cities'
 
-append using `qixiangjv'
+* find the corresponding counties for those cities
+use "skeleton_merged2024.dta" ,clear
+keep county city prov
+duplicates drop
+merge m:1 city prov using `cities'
 
-duplicates drop prov city county op_date,force
+keep if _merge == 3
+drop _merge
 
-save "cloudseeding_merged.dta",replace
+* now we have the cities with their counties, join with qixiangjv data
+joinby prov city using `qixiangjv'
+
+tempfile cities_cleaned
+save `cities_cleaned'
+restore
+
+append using `cities_cleaned'
+
+
+*** expand 直辖市 without counties ***
+preserve 
+keep if prov == "重庆市" | prov == "上海市" | prov == "天津市" | prov == "北京市"
+keep if county == ""
+keep prov
+
+duplicates drop
+
+tempfile zhixiashi
+save `zhixiashi'
+
+use "skeleton_merged2024.dta" ,clear
+keep county city prov
+duplicates drop
+merge m:1 prov using `zhixiashi'
+
+keep if _merge == 3
+drop _merge
+
+joinby prov using `qixiangjv'
+
+tempfile zhixiashi_cleaned
+save `zhixiashi_cleaned'
+restore
+
+append using `zhixiashi_cleaned'
+drop if county == ""
+
+
+
+
+*** for final testing ***
+merge m:1 prov city county year month day using "skeleton_merged2024.dta"
+
+
+
+
+
+
+
+
+
+
+// use "/Users/anorawu/BFI Dropbox/Wanru Wu/Cloudseeding/Cloud Seeding/data/tem/cloudseeding.dta", clear
+// drop if published_time == ""
+// gen published_time2 = word(published_time, 1)
+// replace published_time2 = subinstr(published_time2, "年", "-", .) 
+// replace published_time2 = subinstr(published_time2, "月", "-", .) 
+// replace published_time2 = subinstr(published_time2, "日", "", .) 
+//
+// replace published_time2 = string(year)+ "-" + published_time2 if substr(published_time2,1,2) != "20"
+// gen pub_date  = date(published_time2, "YMD")
+// gen pub_year  = year(pub_date)
+// gen pub_month = month(pub_date)
+// gen pub_day   = day(pub_date)
+//
+// drop published_time2 published_time
+//
+// append using `qixiangjv'
+//
+// duplicates drop prov city county op_date,force
+//
+// save "cloudseeding_merged.dta",replace
 
 
 

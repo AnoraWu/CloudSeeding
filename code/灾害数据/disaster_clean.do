@@ -1,6 +1,6 @@
 clear all
 
-cd "D:\Git Local\CloudSeeding\code\灾害数据"
+cd "C:\Users\Anora\OneDrive\Desktop\data"
 
 use "region_time_cleaned.dta",clear
 gen year = year(date)
@@ -25,10 +25,14 @@ save region_month_cleaned.dta,replace
 
 
 ***** disaster *****
-import delimited "disaster_adcode.csv", clear 
+// import delimited "disaster_adcode.csv", clear 
+import delimited "disaster_adcode_hails.csv", clear 
 
 * keep relevant variable
-keep if eventclassify == "冰雹" | eventclassify == "风雹"
+encode eventclassify, gen(class)
+fre class
+keep if inlist(class,2,26)
+
 keep eventstartdate directeconomiclosses differentdamage affectedpopulation cropsaffectedarea cropscroparea citycode2
 
 gen disaster = 1
@@ -86,9 +90,9 @@ replace citycode = 5000 if (substr(string(citycode), 1, 2) == "50")
 
 gen cloudseeding = 1
 
-collapse (sum) cloudseeding, by (citycode modate)
+collapse (sum) cloudseeding, by (citycode modate )
 
 merge 1:1 citycode modate using `disaster_panel'
 drop _merge
 
-save disaster_cloudseeding_panel.dta,replace
+save disaster_cloudseeding_panel_hails.dta, replace

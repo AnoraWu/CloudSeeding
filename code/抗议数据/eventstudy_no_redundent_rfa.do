@@ -1,7 +1,95 @@
-use "D:\Git Local\CloudSeeding\code\抗议数据\temp_event.dta", clear
+
+* input dir
+cd "C:\Users\Anora\OneDrive\Desktop\data"
+
+use "final_panel_newweibo.dta",clear
+
+drop size*
+
+
+********************************************************
+***************** city level event study ***************
+********************************************************
+
+* collapse to city level
+
+* replace rainfall as missing if all counties within a city has missing rainfall data
+bysort citycode date: egen mnrainfall = mean(rainfall) 
+replace rainfall = -999999999  if(mnrainfall == .) 
+
+collapse (sum) n_cloudseeding n_prt_rfa n_prt_weibo rainfall, by (citycode date)
+
+replace rainfall =. if rainfall < 0
+
+label var n_cloudseeding "num of cloudseeding"
+label var n_prt_weibo "number of protests from weibo"
+label var n_prt_rfa   "number of protests from rfa"
+label var rainfall "rainfall"
+
+save "eventstudy_city.dta", replace
+
+**** use python to clean the data ****
+
+/*
+import pandas as pd
+import os
+import math
+os.chdir(r"C:\Users\Anora\OneDrive\Desktop\data")
+
+
+df = pd.read_stata("eventstudy_city.dta")
+df = df.sort_values(by=['citycode', 'date']).reset_index()
+df["day"] = df.groupby("citycode").cumcount()
+df['event'] = 0
+
+# Identify events (first protest and subsequent protests >= 3 months apart)
+for city, city_df in df.groupby('citycode'):
+    protest_dates = city_df.loc[city_df['n_prt_rfa'] > 0, 'day'].sort_values().tolist()
+    last_event = None
+    
+    for protest_date in protest_dates:
+        if last_event is None or (protest_date - last_event) >= 45:
+            df.loc[(df['citycode'] == int(city)) & (df['day'] == protest_date),'event'] = 1
+            last_event = protest_date
+
+index_list = df.loc[df['event']==1,'index'].tolist()
+df['to_day']=None
+for index in index_list:
+    for i in range(-22,23):
+        if not (index+i<0) or (index+i>len(df)):
+            df.loc[df['index']==index+i,'to_day'] = i
+
+df.to_csv('eventstudy_rfa_city.csv')
+
+df = pd.read_csv('eventstudy_rfa_city.csv')
+
+# Identify unique events and assign an event ID 
+df_list = []
+for city, city_df in df.groupby('citycode'):
+    city_df['event_id'] = (city_df['event'] == 1).cumsum()
+    city_df.loc[df['event'] == 0, 'event_id'] = None   
+    num = city_df['event_id'].max()
+
+    if math.isnan(num):
+        city_df['num'] = 0
+        df_list.append(city_df)
+    else:
+        for i in range(0,int(num)):
+            city_df_temp = city_df.copy()
+            city_df_temp['num'] = i+1
+            df_list.append(city_df_temp)
+
+df_final = pd.concat(df_list)
+df_final.to_stata('temp_event_rfa.dta')
+*/
+
+
+***** clean and run regression *****
+cd "C:\Users\Anora\OneDrive\Desktop\data"
+use "temp_event_rfa.dta", clear
 
 replace event = 0 if (event_id <.) & (event_id != num)
-drop level_0 Unnamed__0 index n_prt_rfa to_day
+drop level_0 Unnamed__0 index n_prt_weibo to_day
 
 * generate id variable
 gen id_str = string(citycode) + string(num)
@@ -58,12 +146,4 @@ keep if reserved == 1
 // Drop temporary variables
 drop mark reserved
 
-
-
-
-*reghdfe
-reghdfe n_cloudseeding g_* g0-g7 rainfall, a(citycode date) vce(cluster citycode)
-coefplot, keep(g_* g0 g1 g2 g3 g4 g5 g6 g7) vertical omitted xlabel(1 "≤ -7" 2 "-6" 3 "-5" 4 "-4" 5 "-3" 6 "-2" 7 "-1" 8 "0" 9 "1" 10 "2" 11 "3" 12 "4" 13 "5" 14 "6" 15 "≥ 7", labsize(medsmall))  ///
-xtitle("") ytitle("Estimated Coefficients", size(medsmall) margin(small)) ylabel(-0.01 "-0.01" 0 "0" 0.01 "0.01" , nogrid labsize(medsmall) angle(0)) ///
-xline(8, lp(dash)) yscale(range(-0.03 0.03)) yline(0, lp(dash)) subtitle("weibo protests as events") scheme(s1mono)
-graph export "2e.png", replace
+export delimited using "rfa_event_study_data_for_R", replace
