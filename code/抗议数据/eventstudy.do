@@ -162,37 +162,48 @@ df.to_csv('eventstudy_rfa_city.csv')
 */
 
 
-// import delimited "eventstudy_rfa_city.csv", clear 
-//
-// * regenerate date variable
-// gen date_stata = date(date, "YMD")
-// format date_stata %td
-// drop date
-// ren date_stata date
-//
-// * set the bins
-// replace to_day = 7 if to_day>=7 & to_day!=. 
-// replace to_day = -7 if to_day<=-7
-//
-// * generate event study variable
-// forvalues k = 7(-1)1{
-// 	gen g_`k' = to_day == -`k'
-// }
-// forvalues k = 0/7{
-// 	gen g`k' = to_day == `k'
-// }
-// replace g_1 = 0
-//
-// gen protest_date = date if event == 1 
-// bysort citycode: egen cohort = min(protest_date)
-// egen indi = max(event), by(citycode)
-// gen never_oper=(indi==0)
-//
-// *reghdfe
-// reghdfe n_cloudseeding g_* g0-g7 rainfall, a(i.citycode i.date) vce(cluster citycode)
-// coefplot, keep(g_* g0 g1 g2 g3 g4 g5 g6 g7) vertical omitted xlabel(1 "≤ -7" 2 "-6" 3 "-5" 4 "-4" 5 "-3" 6 "-2" 7 "-1" 8 "0" 9 "1" 10 "2" 11 "3" 12 "4" 13 "5" 14 "6" 15 "≥ 7", labsize(medsmall))  ///
-// xtitle("") ytitle("Estimated Coefficients", size(medsmall) margin(small)) ylabel(-0.01 "-0.01" 0 "0" 0.01 "0.01" , nogrid labsize(medsmall) angle(0)) ///
-// xline(8, lp(dash)) yscale(range(-0.03 0.03)) yline(0, lp(dash)) subtitle("rfa protests as events") scheme(s1mono)
+import delimited "eventstudy_rfa_city.csv", clear 
+
+* regenerate date variable
+gen date_stata = date(date, "YMD")
+format date_stata %td
+drop date
+ren date_stata date
+
+* set the bins
+replace to_day = 7 if to_day>=7 & to_day!=. 
+replace to_day = -7 if to_day<=-7
+
+* generate event study variable
+forvalues k = 7(-1)1{
+	gen g_`k' = to_day == -`k'
+}
+forvalues k = 0/7{
+	gen g`k' = to_day == `k'
+}
+replace g_1 = 0
+
+gen protest_date = date if event == 1 
+bysort citycode: egen cohort = min(protest_date)
+egen indi = max(event), by(citycode)
+gen never_oper=(indi==0)
+
+xtset citycode date
+* use the mean the previous three days to avoid reserve causality
+forvalues i = 1(1)3{
+	bys citycode (date): gen rain_`i' = L`i'.rainfall
+}
+drop rainfall
+gen rainfall = (rain_1 + rain_2 + rain_3)/3
+label var rainfall "rainfall"
+drop rain_*
+
+*reghdfe
+reghdfe n_cloudseeding g_* g0-g7 rainfall, a(citycode date) vce(cluster citycode)
+
+coefplot, keep(g_* g0 g1 g2 g3 g4 g5 g6 g7) vertical omitted xlabel(1 "≤ -7" 2 "-6" 3 "-5" 4 "-4" 5 "-3" 6 "-2" 7 "-1" 8 "0" 9 "1" 10 "2" 11 "3" 12 "4" 13 "5" 14 "6" 15 "≥ 7", labsize(medsmall))  ///
+xtitle("") ytitle("Estimated Coefficients", size(medsmall) margin(small)) ylabel(-0.01 "-0.01" 0 "0" 0.02 "0.02" 0.04 "0.04" , nogrid labsize(medsmall) angle(0)) ///
+xline(7.5, lp(dash)) yscale(range(-0.03 0.08)) yline(0, lp(dash)) subtitle("rfa protests as events") scheme(s1mono)
 // graph export "2h.png", replace
 //
 // *ppmlhdfe
