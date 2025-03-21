@@ -1,6 +1,6 @@
 
 * input dir
-cd "C:\Users\Anora\OneDrive\Desktop\data"
+cd "/Users/anorawu/BFI Dropbox/Wanru Wu/Cloudseeding/data/抗议数据"
 
 use "final_panel_newweibo.dta",clear
 
@@ -85,7 +85,6 @@ df_final.to_stata('temp_event_rfa.dta')
 
 
 ***** clean and run regression *****
-cd "C:\Users\Anora\OneDrive\Desktop\data"
 use "temp_event_rfa.dta", clear
 
 replace event = 0 if (event_id <.) & (event_id != num)
@@ -117,6 +116,10 @@ replace rainfall =. if rain_1 ==. | rain_2 ==. | rain_3 ==.
 label var rainfall "rainfall"
 drop rain_*
 
+* bin the event
+replace to_day = -7 if to_day < -7
+replace to_day = 7 if to_day <. & to_day > 7
+
 * generate event study variable
 forvalues k = 7(-1)1{
 	gen g_`k' = to_day == -`k'
@@ -126,24 +129,16 @@ forvalues k = 0/7{
 }
 replace g_1 = 0
 
-* Declare panel data structure
-drop if event_date == .
-
-gen reserved = 0  // Create a variable to mark reserved observations
-
-// Identify IDs where to_day == 0
+* drop redundant events
+gen reserved = 0  
 gen mark = (to_day == 0)
 levelsof date if mark, local(dates)
-
-// Loop through each date and mark the range [-7, +7]
 foreach d in `dates' {
     replace reserved = 1 if inrange(date, `d' - 7, `d' + 7)
 }
-
-// Keep only reserved observations
 keep if reserved == 1
-
-// Drop temporary variables
 drop mark reserved
 
-export delimited using "rfa_event_study_data_for_R", replace
+* event study
+eventstudyinteract n_cloudseeding g_* g0-g7 rainfall, cohort(event_date) control_cohort(never_oper) ///
+ covariates(rainfall) absorb(citycode date) vce(cluster citycode)

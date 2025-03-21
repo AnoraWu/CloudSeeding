@@ -2,7 +2,7 @@
 Script Name: merge_with_cloud_2_mp.py
 Author: Wanru Wu
 Date: Jan 11, 2025
-Purpose: Merge fort data with weather station statistics
+Purpose: Merge fort data with GPM statistics
 """
 
 import pandas as pd
@@ -13,126 +13,109 @@ import calendar
 import csv
 import warnings
 from multiprocessing import Pool, cpu_count
+warnings.filterwarnings("ignore")
 
-# warnings.filterwarnings("ignore")
+def process_row(row, data_dir, output_file):
 
-def idw_geopy_for_dataframe(target_df, grid_df, k=5, power=2):
-    for year in range(2010, 2024):
-        for month in range(1, 13):
+    # Helper function: get four surrounding points
+    def get_four_points(lon,lat):
+        lat_min, lat_max, lat_step = 17.95, 54.95, 0.1
+        lon_min, lon_max, lon_step = 73.05, 134.95, 0.1
 
-            # read the precipitation data
-            rain_data = pd.read_stata(rf"{data_dir}/GPM/{year}/{year}{month:02}.dta")
-            rain_data.dropna(inplace=True)
+        # Ensure the given point is within the range
+        if not (lat_min <= lat <= lat_max and lon_min <= lon <= lon_max):
+            raise ValueError("Latitude or longitude is out of the defined range.")
 
+        # Find the closest grid points
+        lat1 = round((round(lat - lat_min,2)+1e-6) // lat_step * lat_step + lat_min,2)
+        lat2 = round(lat1 + lat_step if (lat-lat1>1e-9) else lat1,2)
 
-            def process_row(target_row):
-                # Extract target coordinates
-                target_lat = target_row['latitude']
-                target_lon = target_row['longitude']
-                target_coord = (target_lat, target_lon)
+        lon1 = round((round(lon - lon_min,2)+1e-6)// lon_step * lon_step + lon_min,2)
+        lon2 = round(lon1 + lon_step if (lon-lon1>1e-9) else lon1,2)
 
-                # Calculate geodesic distances from target to all grid points
-                grid_df['distance'] = grid_df.apply(lambda row: distance(target_coord, (row['lat'], row['lon'])).km, axis=1)
-
-                # Select k nearest neighbors
-                nearest_neighbors = grid_df.nsmallest(k, 'distance')
-
-                # Extract distances and precipitation values
-                nearest_distances = nearest_neighbors['distance'].values
-                nearest_precip = nearest_neighbors['precipitation'].values
-
-                # Avoid division by zero by setting a minimum distance threshold
-                nearest_distances = np.maximum(nearest_distances, 1e-6)
-
-                # Compute IDW weights
-                weights = 1 / (nearest_distances ** power)
-                weights /= np.sum(weights)  # Normalize the weights
-
-                # Calculate weighted precipitation estimate
-                estimated_precip = np.sum(weights * nearest_precip)
-                return estimated_precip
-
-    # Apply the function to each row of the target DataFrame
-    target_df['estimated_precipitation'] = target_df.apply(process_row, axis=1)
-
-    return target_df
+        return [(lon1, lat1), (lon1, lat2), (lon2, lat1), (lon2, lat2)]
 
 
-
-
-def process_row(row, rain_gdf, buffer_radius, output_file):
-
+    # Initialize variables
+    pts_list = get_four_points(row["longitude"], row["latitude"])
     results = []
-    fort_geometry = row['geometry']
 
-    for year in range(2010, 2024):
-        print(year)
-        for month in range(1, 13):
+    try:
+        for year in range(2010, 2025):
+            for month in range(1, 13):
 
-            # read the precipitation data
-            rain_data = pd.read_stata(rf"{data_dir}/GPM/{year}/{year}{month:02}.dta")
-            rain_data.dropna(inplace=True)
-            rain_gdf = gpd.GeoDataFrame(
-                rain_data,
-                geometry=gpd.points_from_xy(rain_data["lon"], rain_data["lat"]),
-                crs="EPSG:4326",
-            )
+                # No precipitation data after 2024 Jun
+                if year == 2024 and month > 6:
+                    continue
 
-            pts_inside = rain_gdf[rain_gdf.geometry.within(fort_geometry.buffer(buffer_radius))]
+                # Load precipitation data
+                rain_df = pd.read_stata(rf"{data_dir}/GPM/{year}/{year}{month:02}.dta")
 
-            days_in_month = calendar.monthrange(year, month)[1]
-            for day in range(1, days_in_month + 1):
-                pts_inside_day = pts_inside[(pts_inside["year"] == year) & 
-                                            (pts_inside["month"] == month) & 
-                                            (pts_inside["day"] == day)]
+                days_in_month = calendar.monthrange(year, month)[1]
+                for day in range(1, days_in_month + 1):
+                    rain_df_day = rain_df[rain_df['day']==day]
+                    rain_df_day[['lon','lat']] = rain_df_day[['lon', 'lat']].round(2)
+                    rain_df_day_pts = rain_df_day[
+                        rain_df_day[['lon', 'lat']].apply(tuple, axis=1).isin(pts_list)]
 
-                if not pts_inside_day.empty:
-                    # Compute weights based on distance
-                    for idx, pt in pts_inside_day.iterrows():
-                        pts_inside_day.loc[idx,'dist'] = distance.distance((pt["Lat"], pt["Lon"]), (row["latitude"], row["longitude"])).km
-                    pts_inside_day["weight"] = 1 / ((pts_inside_day["dist"] + 1e-6)**2)
-                    # Select up to 4 nearest stations
-                    pts_inside_day = pts_inside_day.nlargest(4, "weight")
-                    # Weighted average
-                    wt_rainfall= np.average(
-                        pts_inside["precipitation"], weights=pts_inside["weight"] 
-                    )
-                else:
-                    pts_inside["precipitation"] = float("nan")
+                    if len(rain_df_day_pts) > 0: # Only process if points are available
 
-                # Append results for this day
-                result = [row['longitude'], row['latitude'], year, month, day, wt_rainfall] 
-                results.append(result)
+                        # Compute weights based on distance
+                        for idx, pt in rain_df_day_pts.iterrows():
+                            dist = distance.distance((pt["lat"], pt["lon"]), (row["latitude"], row["longitude"])).km
+                            weight = 1 / ((dist + 1e-6) * (dist + 1e-6)) 
+                            rain_df_day_pts.loc[idx,'weight'] = weight
+                        
+                        # Did not count for missing values bc all missing values have been replaced by zero
+                        wt_precipitation = np.average(rain_df_day_pts['precipitation'], weights=rain_df_day_pts['weight'])
 
-    # Write results to file
-    with open(output_file, mode="a", newline="", encoding="utf-8") as f:
-        writer = csv.writer(f)
-        writer.writerows(results)
-
+                        # Append result
+                        results.append([
+                            row['longitude'], row['latitude'], 
+                            row['operation_year'], row['operation_month'], row['operation_day'],	
+                            row['first_operation_date'], year, month, day,
+                            wt_precipitation
+                        ])
+            
+        # Write results in chunks (append mode)
+        with open(output_file, mode='a', newline='') as f:
+            writer = csv.writer(f)
+            writer.writerows(results)
+    
+    except Exception as e:
+        print(e)
 
 # Main script
 if __name__ == "__main__":
-    data_dir = r"/home/wanru/cloudseeding"
-    output_file = f"{data_dir}/炮台数据/server/processed_cloud_data_4.csv"
+
+    local = "local"
+
+    if local == "local":
+        data_dir = rf"/Users/anorawu/BFI Dropbox/Wanru Wu/Cloudseeding/data"
+        output_file = rf"{data_dir}/炮台数据/processed_cloud_data_4.csv"
+        num_workers = 10
+    else:
+        data_dir = rf"/home/wanru/cloudseeding"
+        output_file = rf"{data_dir}/炮台数据/server/processed_cloud_data_4.csv"
+        num_workers = 16
+
     fort_data = pd.read_csv(rf"{data_dir}/炮台数据/cleaned_炮台数据.csv",encoding="utf-8")
     
-
     # Convert to GeoDataFrames
     fort_gdf = gpd.GeoDataFrame(
         fort_data,
         geometry=gpd.points_from_xy(fort_data["longitude"], fort_data["latitude"]),
-        crs="EPSG:4326",
+        crs=4326,
     )
 
-    
     with open(output_file, mode="w", newline="", encoding="utf-8") as f:
-        header = ["longitude", "latitude", "year", "month", "day", ""]
+        header = ["longitude", "latitude","operation_year","operation_month", \
+                  "operation_day", "first_operation_date", "year", "month", "day", "wt_precipitation"]
         writer = csv.writer(f)
         writer.writerow(header)
 
     # Use multiprocessing
-    num_workers = 16
-    args = [(row, buffer_radius, output_file) for _, row in fort_gdf.iterrows()]
+    args = [(row, data_dir, output_file) for _, row in fort_gdf.iterrows()]
     with Pool(num_workers) as pool:
         pool.starmap(process_row,args)
 
