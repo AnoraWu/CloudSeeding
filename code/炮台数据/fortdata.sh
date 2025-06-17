@@ -8,11 +8,16 @@ python cloud_checking.py
 python merge_with_cloud_1_mp.py
 
 # merge with weather station data
-python merge_with_cloud_2_mp.py
-python merge_with_cloud_2_clean.py
+# python merge_with_cloud_2_mp.py
+# python merge_with_cloud_2_clean.py
 
-# merge with merra data
+# merge with merra data (air ice liquid)
 python merge_with_cloud_3_mp.py
+
+# merge with gpm(satellie precipitation data)
+python merge_with_cloud_4_mp.py
+
+# merge with era5-levmean (velocity)
 
 
 
