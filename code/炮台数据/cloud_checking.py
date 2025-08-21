@@ -13,7 +13,7 @@ import numpy as np
 if __name__ == "__main__":
     
     ### Set directories
-    data_dir = "/Users/anorawu/BFI Dropbox/Wanru Wu/Cloudseeding/data"
+    data_dir = "/Users/anorawu/Team MG Dropbox/Wanru Wu/Cloudseeding/data"
 
     # cloud thickness and fraction
     modis_dir = f"{data_dir}/MODIS"

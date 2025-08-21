@@ -83,7 +83,7 @@ def process_row(row, rain_gdf, fort_gdf, buffer_radius, output_file):
 
 # Main script
 if __name__ == "__main__":
-    data_dir = r"/Users/anorawu/BFI Dropbox/Wanru Wu/Cloudseeding/data"
+    data_dir = r"/Users/anorawu/Team MG Dropbox/Wanru Wu/Cloudseeding/data"
     output_file = f"{data_dir}/炮台数据/processed_cloud_data_2.csv"
 
     fort_data = pd.read_csv(f"{data_dir}/炮台数据/cleaned_炮台数据.csv")

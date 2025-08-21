@@ -1,10 +1,10 @@
 * input dir
-cd "/Users/anorawu/BFI Dropbox/Wanru Wu/Cloudseeding/data/抗议数据"
+cd "/Users/anorawu/Team MG Dropbox/Wanru Wu/Cloudseeding/data/抗议数据"
 
 use "final_panel.dta",clear
 
 * output dir
-cd "/Users/anorawu/BFI Dropbox/Wanru Wu/Cloudseeding/output/抗议数据"
+cd "/Users/anorawu/Team MG Dropbox/Wanru Wu/Cloudseeding/output/抗议数据"
 
 
 ********************************************************
@@ -359,12 +359,12 @@ restore
 
 
 * input dir
-cd "/Users/anorawu/BFI Dropbox/Wanru Wu/Cloudseeding/data/抗议数据"
+cd "/Users/anorawu/Team MG Dropbox/Wanru Wu/Cloudseeding/data/抗议数据"
 
 use "final_panel.dta",clear
 
 * output dir
-cd "/Users/anorawu/BFI Dropbox/Wanru Wu/Cloudseeding/output/抗议数据"
+cd "/Users/anorawu/Team MG Dropbox/Wanru Wu/Cloudseeding/output/抗议数据"
 
 
 ********************************************************

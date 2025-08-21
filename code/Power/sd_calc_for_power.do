@@ -1,15 +1,29 @@
+use "/Users/anorawu/Team MG Dropbox/Wanru Wu/Cloudseeding/Cloud Seeding/data/tem/match/forecast_rain/psm_10days.dta", clear
+
+sort id_c id_t year month day
+
 *-------------------------------------------------------------*
-* 1. Control group (imply == 0)
+* 1. Calculate Control Group SD for EU = 24h
 *-------------------------------------------------------------*
 
+preserve
+
+keep if refy == 0 
+* drop unmatched ones
+drop if id_c == 14723292 & id_t == 8533743
+drop if id_c == 8936961 & id_t == 8533743
+
+* drop missing precipitation values
+drop if rain_IDW ==.
+
 * 1a. Compute mean and count for control
-quietly summarize station_20_20 if imply==0
+quietly summarize rain_IDW if imply==0
 local mean0 = r(mean)       // sample mean for control
 local n0    = r(N)          // sample size for control
 
 * 1b. Create deviation and squared‐deviation for control
-generate double diff0 = station_20_20 - `mean0' if imply==0
-generate double sqdiff0 = diff0^2                   if imply==0
+generate double diff0 = rain_IDW - `mean0' if imply==0
+generate double sqdiff0 = diff0^2 if imply==0
 
 * 1c. Sum the squared deviations for control
 quietly summarize sqdiff0 if imply==0
@@ -20,32 +34,68 @@ local sd0 = sqrt(`sumsq0'/(`n0' - 1))
 
 display as text "Standard deviation (control, imply==0): " as result %9.4f `sd0'
 
+restore
+
+
+// *-------------------------------------------------------------*
+// * 2. Calculate Percentage of Correct Guess of Lady Tea Test
+// *-------------------------------------------------------------*
+
+// preserve
+
+// keep if refy == 0 
+// * drop unmatched ones
+// drop if id_c == 14723292 & id_t == 8533743
+// drop if id_c == 8936961 & id_t == 8533743
+
+// * drop missing precipitation values
+// drop if rain_IDW ==.
+
+// keep rain_IDW id_c id_t imply
+// reshape wide rain_IDW, i(id_c id_t) j(imply)
+
+// * drop if both control and target has no rainfall
+// drop if (rain_IDW0 == 0) & (rain_IDW1 == 0)
+
+
+// gen indi = rain_IDW1 - rain_IDW0
+// count if indi > 0
+// count if indi == 0 
+// count if indi < 0 
+
+// // di 9787 /  (6517+9787)
+// // 0.60028214
+
+// restore
+
+
 
 *-------------------------------------------------------------*
-* 2. Treatment group (imply == 1)
+* 3. Calculate PSM Coefficient for Day 0
 *-------------------------------------------------------------*
 
-* 2a. Compute mean and count for treatment
-quietly summarize station_20_20 if imply==1
-local mean1 = r(mean)       // sample mean for treatment
-local n1    = r(N)          // sample size for treatment
+preserve
 
-* 2b. Create deviation and squared‐deviation for treatment
-generate double diff1 = station_20_20 - `mean1' if imply==1
-generate double sqdiff1 = diff1^2                   if imply==1
+gen event = refy+7
+fvset base 6 event
 
-* 2c. Sum the squared deviations for treatment
-quietly summarize sqdiff1 if imply==1
-local sumsq1 = r(sum)        // ∑(x_i − mean1)^2
+egen unique_county=group(dt_adcode id_t)
+egen doy=group(month day)
 
-* 2d. Compute standard deviation for treatment: sqrt[∑(x−mean)^2/(n−1)]
-local sd1 = sqrt(`sumsq1'/(`n1' - 1))
+egen calendar_month=group(year month)
 
-display as text "Standard deviation (treatment, imply==1): " as result %9.4f `sd1'
+gen cluster=.
+replace cluster = id_t if imply==1
+replace cluster = id_c if imply==0
 
 
-*-------------------------------------------------------------*
-* 3. (Optional) Clean up intermediate variables
-*-------------------------------------------------------------*
+reghdfe rain_IDW i.event##c.imply, absorb(unique_county i.refy#i.id_t doy) vce(cluster cluster calendar_month)
 
-drop diff0 sqdiff0 diff1 sqdiff1
+restore
+
+
+
+
+
+
+

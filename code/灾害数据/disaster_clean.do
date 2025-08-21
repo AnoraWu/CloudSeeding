@@ -1,6 +1,6 @@
 clear all
 
-cd "/Users/anorawu/BFI Dropbox/Wanru Wu/Cloudseeding/data/灾害数据"
+cd "/Users/anorawu/Team MG Dropbox/Wanru Wu/Cloudseeding/data/灾害数据"
 
 use "region_time_cleaned.dta",clear
 gen year = year(date)
@@ -52,6 +52,8 @@ format modate %tm
 drop if date==.
 drop date eventstartdate
 replace citycode = 	3701 if citycode == 3712
+replace citycode =  5406 if citycode == 5424
+replace citycode = 	4228 if citycode == 4290
 
 
 collapse (sum) directeconomiclosses differentdamage affectedpopulation cropsaffectedarea cropscroparea disaster, by (citycode modate)
@@ -88,6 +90,7 @@ replace citycode = string(adcode) if substr(string(adcode), 3, 2) == "90"
 destring citycode, replace
 replace citycode = 	3701 if citycode == 3712
 replace citycode = 	4228 if citycode == 4290
+replace citycode =  5406 if citycode == 5424
 
 replace citycode = 1100 if (substr(string(citycode), 1, 2) == "11")
 replace citycode = 1200 if (substr(string(citycode), 1, 2) == "12")

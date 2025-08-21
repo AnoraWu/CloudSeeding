@@ -1,6 +1,6 @@
 import pandas as pd
 
-folder = "/Users/anorawu/BFI Dropbox/Wanru Wu/Cloudseeding/data/气象局数据/人工处理"
+folder = "/Users/anorawu/Team MG Dropbox/Wanru Wu/Cloudseeding/data/气象局数据/人工处理"
 input_dir = f"{folder}/result_with_text.csv"
 
 df = pd.read_csv(input_dir)
@@ -35,7 +35,7 @@ df3 = df[df['issue_time'].isna()]
 df3.drop_duplicates(subset=['气象局公告内容'],inplace=True)
 df3.to_csv(f"{folder}/need_manual_issue_time.csv")
 
-df4 = pd.read_csv("/Users/anorawu/BFI Dropbox/Wanru Wu/Cloudseeding/data/气象局数据/data_bureau.csv")
+df4 = pd.read_csv("/Users/anorawu/Team MG Dropbox/Wanru Wu/Cloudseeding/data/气象局数据/data_bureau.csv")
 df4["气象局公告内容"] = df4["气象局公告内容"].str.replace(r'\s+', ' ', regex=True)
 df4.drop_duplicates(inplace=True)
 df5 = df3.merge(df4, on='气象局公告内容', how='left')

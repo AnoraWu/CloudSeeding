@@ -484,7 +484,7 @@ merge m:1 prov city county year month day using "skeleton_merged2024.dta"
 
 
 
-// use "/Users/anorawu/BFI Dropbox/Wanru Wu/Cloudseeding/Cloud Seeding/data/tem/cloudseeding.dta", clear
+// use "/Users/anorawu/Team MG Dropbox/Wanru Wu/Cloudseeding/Cloud Seeding/data/tem/cloudseeding.dta", clear
 // drop if published_time == ""
 // gen published_time2 = word(published_time, 1)
 // replace published_time2 = subinstr(published_time2, "年", "-", .) 

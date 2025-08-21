@@ -1,6 +1,6 @@
 
 * input dir
-cd "/Users/anorawu/BFI Dropbox/Wanru Wu/Cloudseeding/data/抗议数据"
+cd "/Users/anorawu/Team MG Dropbox/Wanru Wu/Cloudseeding/data/抗议数据"
 
 use "final_panel_newweibo.dta",clear
 
@@ -81,7 +81,7 @@ df_final.to_stata('temp_event.dta')
 clear all
 set maxvar 100000
 
-cd "/Users/anorawu/BFI Dropbox/Wanru Wu/Cloudseeding/data/抗议数据"
+cd "/Users/anorawu/Team MG Dropbox/Wanru Wu/Cloudseeding/data/抗议数据"
 use "temp_event.dta",clear
 
 replace event = 0 if (event_id <.) & (event_id != num)

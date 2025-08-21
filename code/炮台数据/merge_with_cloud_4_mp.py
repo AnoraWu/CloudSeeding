@@ -91,7 +91,7 @@ if __name__ == "__main__":
     local = "local"
 
     if local == "local":
-        data_dir = rf"/Users/anorawu/BFI Dropbox/Wanru Wu/Cloudseeding/data"
+        data_dir = rf"/Users/anorawu/Team MG Dropbox/Wanru Wu/Cloudseeding/data"
         output_file = rf"{data_dir}/炮台数据/processed_cloud_data_4.csv"
         num_workers = 10
     else:

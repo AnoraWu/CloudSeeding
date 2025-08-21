@@ -1,6 +1,6 @@
 clear all
 
-cd "/Users/anorawu/BFI Dropbox/Wanru Wu/Cloudseeding/data/抗议数据"
+cd "/Users/anorawu/Team MG Dropbox/Wanru Wu/Cloudseeding/data/抗议数据"
 
 ***************** build panel data skeleton *****************
 
@@ -240,9 +240,9 @@ save "region_time_weibo_collapsed.dta", replace
 * using python, first cropping columns we want to use to avoid import error
 /*
 import pandas as pd
-df = pd.read_csv("/Users/anorawu/BFI Dropbox/Wanru Wu/Cloudseeding/data/抗议数据/RFA_protest3.csv",encoding='utf-8')
+df = pd.read_csv("/Users/anorawu/Team MG Dropbox/Wanru Wu/Cloudseeding/data/抗议数据/RFA_protest3.csv",encoding='utf-8')
 df = df[['adcode','location','size_level','year','month','day','citycode','省','市','区']]
-df.to_csv("/Users/anorawu/BFI Dropbox/Wanru Wu/Cloudseeding/data/抗议数据/RFA_protest3_cropped.csv",index=False)
+df.to_csv("/Users/anorawu/Team MG Dropbox/Wanru Wu/Cloudseeding/data/抗议数据/RFA_protest3_cropped.csv",index=False)
 */
 
 
@@ -320,7 +320,7 @@ import numpy as np
 from datetime import datetime, timedelta
 import cpca
 import os
-os.chdir("/Users/anorawu/BFI Dropbox/Wanru Wu/Cloudseeding/data/抗议数据")
+os.chdir("/Users/anorawu/Team MG Dropbox/Wanru Wu/Cloudseeding/data/抗议数据")
 
 df = pd.read_stata("cloudseeding.dta")
 df["district"] = df['prov'] + df['city'] + df['county']
@@ -474,7 +474,7 @@ import numpy as np
 from datetime import datetime, timedelta
 import cpca
 import os
-os.chdir("/Users/anorawu/BFI Dropbox/Wanru Wu/Cloudseeding/data/抗议数据")
+os.chdir("/Users/anorawu/Team MG Dropbox/Wanru Wu/Cloudseeding/data/抗议数据")
 
 df = pd.read_stata("Meteorological.dta")
 df["district"] = df['prov'] + df['city'] + df['county']

@@ -1,7 +1,7 @@
 * regress 
 * instructions:  数据加总在prefecture-year level，Y是这个地方这一年的冰雹次数，X是这个地方这一年做了多少次人工降雨（分别试一下全年的数量，或者夏季的数量）。table第一列没有FE，第二列控制prefecture FE, 第三列prefecture FE和year FE.
 
-cd "/Users/anorawu/BFI Dropbox/Wanru Wu/Cloudseeding/data/灾害数据"
+cd "/Users/anorawu/Team MG Dropbox/Wanru Wu/Cloudseeding/data/灾害数据"
 
 clear all 
 
