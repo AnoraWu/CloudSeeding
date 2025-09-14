@@ -19,6 +19,9 @@ else if c(username)=="sw" {
 else if c(username)=="AW" {
 	global dir "F:\dropbox\Dropbox\Cloud Seeding"
 }
+else if c(username) == "anora"{
+	global dir "/Users/anora/Team MG Dropbox/Wanru Wu/Cloudseeding/Cloud Seeding"
+}
 else {
 	global dir ""
 }
@@ -26,41 +29,46 @@ else {
 cd "$dir"
 global raw_data "$dir/data/raw"
 global data "$dir/data"
-global out_files "$dir/output"
 
 ***************************************************************************************************
 // define output directories
 global data_tem "$data/tem/match/pm_5_int"
-global output_figure "F:\dropbox\Dropbox\Predoc_Project\Cloud_Seeding\output" 
-global output_notitle "F:\dropbox\Dropbox\Predoc_Project\Cloud_Seeding\output"
-global output_table "F:\dropbox\Dropbox\Predoc_Project\Cloud_Seeding\output"
+global final "/Users/anora/Team MG Dropbox/Wanru Wu/Cloudseeding_Anora/SSF/final"
+global output "/Users/anora/Team MG Dropbox/Wanru Wu/Cloudseeding_Anora/SSF/output"
 
 
 *** (1) Matching using integer value of rainfall and forecast  ========================
 **** data preparation 
-use "$raw_data/skeleton_merged2024.dta", clear
+use "$raw_data/skeleton_merged2024_ssf.dta", clear
+
+* drop unused variables
+drop ice_mean liquid_mean air_fraction_mean evp pressure SSH 
+drop tem_avg tem_max tem_min win_max win_inst_max 
+drop 天气情况 pre_ch alert alertn published_time operation_type 
+drop aqi pm25 lat lon smci wind_2min tem_0cm inversion
 
 drop date
 gen date = mdy(month, day, year)
 tsset dt_adcode date
 
 forval i = 1/7 {
-	gen mars_pre`i' = int(1*l`i'.pre_mars)
+	gen mars_pre`i' = int(l`i'.pre_mars)
 }
-
 
 forval i = 1/2 {
 	gen mars_late`i' = int(1*f`i'.pre_mars)
 }
 
+* 12.6% percent of counties have valid entries of solar_zenith sw_toa_flux_up less than 4000
 forval i = 1/7 {
-	gen tem_pre`i' = int(1*l`i'.tem_IDW)
+	gen sw_toa_flux_up`i' = int(0.02*l`i'.sw_toa_flux_up)
+// 	gen solar_zenith`i' = int(0.1*l`i'.solar_zenith)
 }
 
 gen rain_pre1 = int(1*l1.rain_IDW)		
 replace pre_mars = int(1*pre_mars)
 
-keep mars_pre7 mars_pre6 mars_pre5 mars_pre4 mars_pre3 mars_pre2 mars_pre1 pre_mars mars_late1 mars_late2 rain_pre1 tem_pre7 tem_pre6 tem_pre5 tem_pre4 tem_pre3 tem_pre2 tem_pre1 county prov city dt_adcode ct_adcode pr_adcode year month day imply county_level city_level 
+keep mars_pre7 mars_pre6 mars_pre5 mars_pre4 mars_pre3 mars_pre2 mars_pre1 pre_mars mars_late1 mars_late2 rain_pre1 sw_toa_flux_up* county prov city dt_adcode ct_adcode pr_adcode year month day imply county_level city_level 
 
 merge 1:1 dt_adcode ct_adcode pr_adcode year month day using "$data_tem/pscore.dta"
 drop _merge
@@ -68,7 +76,7 @@ drop if pscore ==. // delete those useless observations
 gen id_t = _n if imply == 1
 gen id_c = _n if imply == 0
 
-save "F:\dropbox\Dropbox\Predoc_Project\Cloud_Seeding\data\temperature\int_forecast_rain_temperature_01.dta", replace
+save "$final/int_forecast_rain_temperature_01.dta", replace
 
 ********treated group 
 keep if imply == 1
@@ -78,46 +86,50 @@ rename pscore pscore_t
 
 drop if mars_pre7==. | mars_pre6==.|mars_pre5==.|mars_pre4==.|mars_pre3==.| mars_pre2==.| mars_pre1==.| pre_mars==.| mars_late1==.| mars_late2==. 
 drop if rain_pre1 == . 
-drop if tem_pre7 ==. | tem_pre6 ==. | tem_pre5 ==. | tem_pre4 ==. | tem_pre3 ==. | tem_pre2 ==. | tem_pre1==. // 64,639 treatments left
+drop if sw_toa_flux_up7 ==. | sw_toa_flux_up6 ==. | sw_toa_flux_up5 ==. | sw_toa_flux_up4 ==. | sw_toa_flux_up3 ==. | sw_toa_flux_up2 ==. | sw_toa_flux_up1==. | sw_toa_flux_up==.
+// drop if solar_zenith7 ==. | solar_zenith6 ==. | solar_zenith5 ==. | solar_zenith4 ==. | solar_zenith3 ==. | solar_zenith2 ==. | solar_zenith1==.  //50,873 observations left
 
-drop if mars_pre7==0 & mars_pre6==0 & mars_pre5==0 & mars_pre4==0 & mars_pre3 ==0 & mars_pre2 ==0 & mars_pre1==0 &mars_late1==0 &mars_late2==0 & pre_mars==0 & rain_pre1==0  & tem_pre7 == 0 & tem_pre6==0 & tem_pre5==0 & tem_pre4==0 & tem_pre3==0 & tem_pre2 ==0 & tem_pre1 ==0 // 0 observations deleted
 
-save "F:\dropbox\Dropbox\Predoc_Project\Cloud_Seeding\data\temperature\treated_no0.dta", replace
+drop if mars_pre7==0 & mars_pre6==0 & mars_pre5==0 & mars_pre4==0 & mars_pre3 ==0 & mars_pre2 ==0 & mars_pre1==0 &mars_late1==0 &mars_late2==0 & pre_mars==0 & rain_pre1==0  & sw_toa_flux_up7 == 0 & sw_toa_flux_up6==0 & sw_toa_flux_up5==0 & sw_toa_flux_up4==0 & sw_toa_flux_up3==0 & sw_toa_flux_up2 ==0 & sw_toa_flux_up1 ==0 // 0 observations deleted
+
+save "$final/treated_no0.dta", replace
 
 *** Control group
-use "F:\dropbox\Dropbox\Predoc_Project\Cloud_Seeding\data\temperature\int_forecast_rain_temperature_01.dta", clear
+use "$final/int_forecast_rain_temperature_01.dta", clear
 
 drop if imply == 1
 
 drop if mars_pre7==. | mars_pre6==.|mars_pre5==.|mars_pre4==.|mars_pre3==.| mars_pre2==.| mars_pre1==.| pre_mars==.| mars_late1==.| mars_late2==. 
 drop if rain_pre1 == . 
-drop if tem_pre7 ==. | tem_pre6 ==. | tem_pre5 ==. | tem_pre4 ==. | tem_pre3 ==. | tem_pre2 ==. | tem_pre1==. // 
+drop if sw_toa_flux_up7 ==. | sw_toa_flux_up6 ==. | sw_toa_flux_up5 ==. | sw_toa_flux_up4 ==. | sw_toa_flux_up3 ==. | sw_toa_flux_up2 ==. | sw_toa_flux_up1==. | sw_toa_flux_up==. // 
+// drop if solar_zenith7 ==. | solar_zenith6 ==. | solar_zenith5 ==. | solar_zenith4 ==. | solar_zenith3 ==. | solar_zenith2 ==. | solar_zenith1==. 
 
-drop if mars_pre7==0 & mars_pre6==0 & mars_pre5==0 & mars_pre4==0 & mars_pre3 ==0 & mars_pre2 ==0 & mars_pre1==0 &mars_late1==0 &mars_late2==0 & pre_mars==0 & rain_pre1==0  & tem_pre7 == 0 & tem_pre6==0 & tem_pre5==0 & tem_pre4==0 & tem_pre3==0 & tem_pre2 ==0 & tem_pre1 ==0 // 52 observations deleted
+drop if mars_pre7==0 & mars_pre6==0 & mars_pre5==0 & mars_pre4==0 & mars_pre3 ==0 & mars_pre2 ==0 & mars_pre1==0 &mars_late1==0 &mars_late2==0 & pre_mars==0 & rain_pre1==0  & sw_toa_flux_up7 == 0 & sw_toa_flux_up6==0 & sw_toa_flux_up5==0 & sw_toa_flux_up4==0 & sw_toa_flux_up3==0 & sw_toa_flux_up2 ==0 & sw_toa_flux_up1 ==0 // 0 observations deleted
 
 drop id_t
 drop prov city county city_level county_level
 rename pscore pscore_c
 
-egen control_id = group(mars_pre7 mars_pre6 mars_pre5 mars_pre4 mars_pre3 mars_pre2 mars_pre1 pre_mars mars_late1 mars_late2 rain_pre1 tem_pre7 tem_pre6 tem_pre5 tem_pre4 tem_pre3 tem_pre2 tem_pre1) 
+egen control_id = group(mars_pre7 mars_pre6 mars_pre5 mars_pre4 mars_pre3 mars_pre2 mars_pre1 pre_mars mars_late1 mars_late2 rain_pre1 sw_toa_flux_up7 sw_toa_flux_up6 sw_toa_flux_up5 sw_toa_flux_up4 sw_toa_flux_up3 sw_toa_flux_up2 sw_toa_flux_up1) 
 
-save "F:\dropbox\Dropbox\Predoc_Project\Cloud_Seeding\data\temperature\control_no0_all.dta", replace
+save "$final/control_no0_all.dta", replace
 
 
 **** exact matching 
 drop dt_adcode ct_adcode pr_adcode year month day imply id_c pscore_c
 duplicates drop control_id, force
 
-joinby mars_pre7 mars_pre6 mars_pre5 mars_pre4 mars_pre3 mars_pre2 mars_pre1 pre_mars mars_late1 mars_late2 rain_pre1 tem_pre7 tem_pre6 tem_pre5 tem_pre4 tem_pre3 tem_pre2 tem_pre1 using "F:\dropbox\Dropbox\Predoc_Project\Cloud_Seeding\data\temperature\treated_no0.dta"
+joinby mars_pre7 mars_pre6 mars_pre5 mars_pre4 mars_pre3 mars_pre2 mars_pre1 pre_mars mars_late1 mars_late2 rain_pre1 sw_toa_flux_up7 sw_toa_flux_up6 sw_toa_flux_up5 sw_toa_flux_up4 sw_toa_flux_up3 sw_toa_flux_up2 sw_toa_flux_up1 using "$final/treated_no0.dta"
+
 
 keep control_id id_t pscore_t imply 
 
-save "F:\dropbox\Dropbox\Predoc_Project\Cloud_Seeding\data\temperature\matchid_no0.dta", replace
+save "$final/matchid_no0.dta", replace
 
 
 ****only keep treatments matched with controls 
 keep id_t
-merge 1:1 id_t using "F:\dropbox\Dropbox\Predoc_Project\Cloud_Seeding\data\temperature\treated_no0.dta"
+merge 1:1 id_t using "$final/treated_no0.dta"
 keep if _merge==3 // 15408 matched
 drop _merge
 
@@ -128,42 +140,42 @@ bysort dt_adcode ct_adcode pr_adcode (date): replace drop_flag = 1 if _n > 1 & d
 
 drop if drop_flag == 1 // 13,158 deleted
 
-foreach var of varlist mars_pre1-tem_pre7{
+foreach var of varlist mars_pre1-sw_toa_flux_up7{
 	drop `var'
 }
 drop pre_mars date drop_flag
 
-save "F:\dropbox\Dropbox\Predoc_Project\Cloud_Seeding\data\temperature\treated_no0_matched.dta", replace
+save "$final/treated_no0_matched.dta", replace //4430 points
 
 
 ***Adjust the matchid based on treatment
-use "F:\dropbox\Dropbox\Predoc_Project\Cloud_Seeding\data\temperature\matchid_no0.dta", clear
+use "$final/matchid_no0.dta", clear
 
-merge 1:1 id_t using "F:\dropbox\Dropbox\Predoc_Project\Cloud_Seeding\data\temperature\treated_no0_matched.dta"
-keep if _merge==3 // 10921 left
+merge 1:1 id_t using "$final/treated_no0_matched.dta"
+keep if _merge==3 // 4430 left
 keep control_id id_t pscore_t imply
 
-save "F:\dropbox\Dropbox\Predoc_Project\Cloud_Seeding\data\temperature\matchid_no0.dta", replace
+save "$final/matchid_no0.dta", replace
 
 
 ***control group 
-use "F:\dropbox\Dropbox\Predoc_Project\Cloud_Seeding\data\temperature\control_no0_all.dta", clear
+use "$final/control_no0_all.dta", clear
 
 keep dt_adcode ct_adcode pr_adcode year month day control_id id_c pscore_c imply
 
 xtile quart_bp = id_c, nq(10) // divided into 10 subsamples -- it's faster than matching in one file 
 tab quart_bp
 
-save "F:\dropbox\Dropbox\Predoc_Project\Cloud_Seeding\data\temperature\control_no0_all_quart.dta", replace
+save "$final/control_no0_all_quart.dta", replace
 
-use "F:\dropbox\Dropbox\Predoc_Project\Cloud_Seeding\data\temperature\control_no0_all_quart.dta", clear
+use "$final/control_no0_all_quart.dta", clear
 * It takes approximately 20min to run the loop below. (这里是因为之前不加soil的匹配上的非常多，所以要花很长时间；如果匹配上的不多，或许可以不需要这个循环，直接运行)
 //在这里要注意提前创建\match_no0\文件夹避免报错，以及更改改文件为可阅读
 forvalues i = 1/10{
-    use "F:\dropbox\Dropbox\Predoc_Project\Cloud_Seeding\data\temperature\control_no0_all_quart.dta", clear
+    use "$final/control_no0_all_quart.dta", clear
     keep if quart_bp == `i'
 	
-	joinby control_id using "F:\dropbox\Dropbox\Predoc_Project\Cloud_Seeding\data\temperature\matchid_no0.dta"
+	joinby control_id using "$final/matchid_no0.dta"
 	drop quart_bp control_id
 	
 	gen pscore_d = abs(pscore_t-pscore_c)
@@ -171,23 +183,23 @@ forvalues i = 1/10{
 	by id_t: keep if _n==1
 	
 	drop pscore_c pscore_t
-	save "F:\dropbox\Dropbox\Predoc_Project\Cloud_Seeding\data\temperature\match_no0\match_`i'.dta", replace
+	save "$final/match_no0\match_`i'.dta", replace
 	
-	keep id_c id_t
-	merge 1:1 id_t using "F:\dropbox\Dropbox\Predoc_Project\Cloud_Seeding\data\temperature\treated_no0_matched.dta", keep(match)
-	drop _merge pscore_t
+	keep id_c id_t 
+	merge 1:1 id_t using "$final/treated_no0_matched.dta", keep(match)
+	drop _merge pscore_t sw_toa_flux_up
 	
-	append using "F:\dropbox\Dropbox\Predoc_Project\Cloud_Seeding\data\temperature\match_no0\match_`i'.dta"
+	append using "$final/match_no0\match_`i'.dta"
 	
 	sort id_t imply
 	replace pscore_d = pscore_d[_n-1] if pscore_d==.
 	tab imply
-	save "F:\dropbox\Dropbox\Predoc_Project\Cloud_Seeding\data\temperature\match_no0\match_`i'.dta", replace
+	save "$final/match_no0\match_`i'.dta", replace
 }
 
 ** Combine mathced data and find the best psm ones. 
 clear
-cd "F:\dropbox\Dropbox\Predoc_Project\Cloud_Seeding\data\temperature\match_no0"
+cd "$final/match_no0"
 openall
 
 sort id_t imply pscore_d
@@ -197,7 +209,7 @@ tab imply
 bys id_t id_c: replace city_level = city_level[_n+1] if city_level==.
 bys id_t id_c: replace county_level = county_level[_n+1] if county_level==.
 
-save "F:\dropbox\Dropbox\Predoc_Project\Cloud_Seeding\data\temperature\psm_no0_matched.dta", replace
+save "$final/psm_no0_matched.dta", replace
 
 
 ** Expand the dataset to include a time window from -7 to +7 days relative to the cloud seeding event
@@ -217,18 +229,18 @@ rename date event_date
 rename shifted_date date
 
 *merge prov city county
-merge m:1 year month day dt_adcode ct_adcode pr_adcode using "$raw_data/skeleton.dta" , keep(match master)
+merge m:1 year month day dt_adcode ct_adcode pr_adcode using "$raw_data/skeleton_merged2024_ssf.dta" , keep(match master)
 sort _merge // 55 unmatched, all from 2024/09
 drop _merge
 
 *merge meteorological data
-merge m:1 year month day prov city county using "$raw_data/skeleton_merged2024.dta", keep(match master) 
+merge m:1 year month day prov city county using "$raw_data/skeleton_merged2024_ssf.dta", keep(match master) 
 drop _merge
 
-save "F:\dropbox\Dropbox\Predoc_Project\Cloud_Seeding\data\temperature\psm_10days.dta", replace
+save "$final/psm_10days.dta", replace
 
 
-use "F:\dropbox\Dropbox\Predoc_Project\Cloud_Seeding\data\temperature\psm_10days.dta", clear
+use "$final/psm_10days.dta", clear
 gen event = refy+7
 fvset base 6 event
 
@@ -244,7 +256,9 @@ replace cluster = id_c if imply==0
 
 
 *************** Graphs
-reghdfe tem_IDW i.event##c.imply, absorb(unique_county i.refy#i.id_t year doy) vce(cluster cluster calendar_month)
+reghdfe sw_toa_flux_up i.event##c.imply, absorb(unique_county i.refy#i.id_t year doy) vce(cluster cluster calendar_month)
+
+save "$final/result.dta", replace
 
 coefplot, yline(0, lp(solid) lc(cranberry)) xline(7.5, lp(dash) lc(black)) baselevels omitted vert keep(*event#c.imply) xlabel(1 "-7" 2 "-6" 3 "-5" 4 "-4" 5 "-3" 6 "-2" 7 "-1" 8 "0" 9 "1" 10 "2" 11 "3" 12 "4" 13 "5" 14 "6" 15 "7", labsize(medsmall)) ylabel (, nogrid) ciopt(lcolor(black)) mcolor(black)  ///
     xtitle("Days Relative to Cloud Seeding Day") scheme(stcolor)	
@@ -255,7 +269,7 @@ graph export "F:\dropbox\Dropbox\Predoc_Project\Cloud_Seeding\output\draft\psm_t
 //weighted results
 //1.weighted by county area
 clear all
-use "F:\dropbox\Dropbox\Predoc_Project\Cloud_Seeding\data\temperature\psm_10days.dta", clear
+use "$final/psm_10days.dta", clear
 gen event = refy+7
 fvset base 6 event
 
@@ -282,7 +296,7 @@ graph export "F:\dropbox\Dropbox\Predoc_Project\Cloud_Seeding\output\draft\psm_t
 
 //2.weighted by agriculture area
 clear all
-use "F:\dropbox\Dropbox\Predoc_Project\Cloud_Seeding\data\temperature\psm_10days.dta", clear
+use "$final/psm_10days.dta", clear
 gen event = refy+7
 fvset base 6 event
 

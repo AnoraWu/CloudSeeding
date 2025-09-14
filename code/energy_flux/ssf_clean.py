@@ -1,15 +1,13 @@
 import xarray as xr
 import os
 import geopandas as gpd
-import xarray as xr
-import geopandas as gpd
 import pandas as pd
 from multiprocessing import Pool
 
 
 # The files were in netCDF3zip format, after manually unzipping, they are netCDF3 now
 def clean_nc_file(file, districts):
-    with xr.open_dataset(file) as ds:
+   with xr.open_dataset(file) as ds:
         lons = ds["lon"].values
         lats = ds["lat"].values
 
@@ -23,17 +21,16 @@ def clean_nc_file(file, districts):
         joined = gpd.sjoin(point_gdf, districts, how="left", predicate="within")
 
         # Extract date
-        dates = ds["time"].values.astype("datetime64[D]").astype("U10")
+        dates = pd.to_datetime(ds["time"].values).tz_localize("UTC").tz_convert("Asia/Shanghai").tz_localize(None).values.astype("datetime64[D]").astype("U10")
+        ds["date"] = xr.DataArray(dates, dims="time")
 
         # Add back to the netcdf
         ds["region"] = xr.DataArray(joined["dt_adcode"].to_numpy(), dims="time")
-        ds["date"] = xr.DataArray(dates, dims="time")
         print("added region and time variable")
 
         # Filter valid rows
         cat1 = pd.Categorical(ds["region"].values)
-        cat2 = pd.Categorical(ds["date"].values)
-        mask = (cat1.codes >= 0) & (cat2.codes >= 0)
+        mask = (cat1.codes >= 0) 
         ds_masked = ds.isel(time=mask)  
         print("masked")
 
@@ -45,7 +42,10 @@ def clean_nc_file(file, districts):
         print("assigned combined group")
 
         # Select variables to keep
-        variables_to_keep = [ 'CERES_SW_TOA_flux___upwards',
+        variables_to_keep = ['CERES_viewing_zenith_at_surface',
+                             'CERES_relative_azimuth_at_surface',
+                             'CERES_solar_zenith_at_surface',
+                             'CERES_SW_TOA_flux___upwards',
                              'CERES_SW_radiance___upwards',
                              'CERES_LW_TOA_flux___upwards',
                              'CERES_LW_radiance___upwards',
@@ -58,6 +58,9 @@ def clean_nc_file(file, districts):
                              'CERES_downward_LW_surface_flux___Model_B',
                              'CERES_net_LW_surface_flux___Model_B',
                              'CERES_downward_LW_surface_flux___Model_B__clearsky',
+                             'CERES_LW_surface_emissivity',
+                             'CERES_WN_surface_emissivity',
+                             'CERES_broadband_surface_albedo',
                              'combined_group']
         ds_selected = ds_masked[variables_to_keep]
         print("selected target variables")
@@ -67,7 +70,7 @@ def clean_nc_file(file, districts):
         print("converted")
 
         # Calculate means by combined group, clean the data
-        df_final = df_temp.groupby(['combined_group']).mean()
+        df_final = df_temp.groupby(['combined_group']).mean() # NAvalues are ignored
         df_final = df_final.reset_index()
         df_final['adcode'] = df_final['combined_group'].str[0:6]
         df_final['date'] = df_final['combined_group'].str[7:]
@@ -79,13 +82,13 @@ def clean_nc_file(file, districts):
 if __name__ == "__main__":
 
     # load all files
-    os.chdir("/Users/anorawu/Team MG Dropbox/Wanru Wu/Cloudseeding/data/SSF")
+    os.chdir("/Users/anora/Team MG Dropbox/Wanru Wu/Cloudseeding_Anora/SSF/raw/terra")
 
     path = os.getcwd() 
     
     # Get the list of all files and directories 
     all_files = os.listdir(path) 
-    data_files_terra = [file for file in all_files if file.find("CERES_SSF_Terra-XTRK_Edition4A")!=-1]
+    data_files_terra = [file for file in all_files if file.find("CERES_SSF_Terra-XTRK_Edition4A_Subset")!=-1]
 
     # Load the county-level district file
     county_gdf = gpd.read_file(os.path.dirname(os.getcwd()) + "/district/district.shp")
@@ -94,8 +97,10 @@ if __name__ == "__main__":
     map_iterables = [(file,county_gdf) for file in data_files_terra]
 
     # List used to store all dataframes created from nc files
-    with Pool(6) as pool:
+    with Pool(9) as pool:
         df_list = pool.starmap(clean_nc_file, map_iterables)
     
     df = pd.concat(df_list)
-    df.to_csv('combined_ssf.csv', index=False)
+    output_path = os.path.dirname(os.path.dirname(os.getcwd())) + '/intermediate/combined_ssf.csv'
+    df.to_csv(output_path, index=False)
+    
