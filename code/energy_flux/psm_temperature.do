@@ -2,7 +2,7 @@
 ** this do file 
 ** data files used: 
 ** data files produced:
-** last update: 03/07/2025
+** last update: 09/14/2025
 ***********************************************************************************************************
 clear all
 set more off
@@ -59,7 +59,6 @@ forval i = 1/2 {
 	gen mars_late`i' = int(1*f`i'.pre_mars)
 }
 
-* 12.6% percent of counties have valid entries of solar_zenith sw_toa_flux_up less than 4000
 forval i = 1/7 {
 	gen sw_toa_flux_up`i' = int(0.02*l`i'.sw_toa_flux_up)
 // 	gen solar_zenith`i' = int(0.1*l`i'.solar_zenith)
