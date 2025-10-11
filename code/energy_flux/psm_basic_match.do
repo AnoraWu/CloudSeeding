@@ -33,8 +33,8 @@ global data "$dir/data"
 ***************************************************************************************************
 // define output directories
 global data_tem "$data/tem/match/pm_5_int"
-global final "/Users/anora/Team MG Dropbox/Wanru Wu/Cloudseeding_Anora/SSF/final"
-global output "/Users/anora/Team MG Dropbox/Wanru Wu/Cloudseeding_Anora/SSF/output"
+global final "/Users/anora/Team MG Dropbox/Wanru Wu/Cloudseeding_Anora/SSF/final/basic_match"
+global output "/Users/anora/Team MG Dropbox/Wanru Wu/Cloudseeding_Anora/SSF/output/basic_match"
 
 
 *** (1) Matching using integer value of rainfall and forecast  ========================
@@ -50,6 +50,29 @@ drop aqi pm25 lat lon smci wind_2min tem_0cm inversion
 drop date
 gen date = mdy(month, day, year)
 tsset dt_adcode date
+
+* for flux and radiance, interpolate for missing days if missing days <= 10 days
+foreach var in sw_toa_flux_up net_sw_surface_flux sw_radiance_up lw_toa_flux_up net_lw_surface_flux{
+	
+	bys dt_adcode (date): gen miss = missing(`var')
+	bys dt_adcode (date): gen gapid = sum(miss != miss[_n-1])
+	bys dt_adcode gapid (date): gen gapcount = sum(miss) if miss
+	bys dt_adcode gapid: egen maxgap = max(gapcount)
+
+	* Interpolate
+	bys dt_adcode (date): ipolate `var' date, gen(`var'_ipol)
+
+	* Keep original missing if the gap is too long
+	replace `var'_ipol = . if miss & maxgap > 10
+	
+	* Fill original variables
+	replace `var' = `var'_ipol if miss
+	
+	drop `var'_ipol miss gapid gapcount maxgap 
+	
+}
+
+
 
 forval i = 1/7 {
 	gen mars_pre`i' = int(l`i'.pre_mars)
@@ -234,25 +257,31 @@ replace cluster = id_t if imply==1
 replace cluster = id_c if imply==0
 
 
+* clean flux/radiance variable at night
+replace sw_toa_flux_up = . if sw_toa_flux_up == 0
+replace sw_radiance_up = . if sw_radiance_up == 0
+
 *************** Graphs
 
-* control solar zenith
-foreach var in sw_toa_flux_up net_sw_surface_flux sw_radiance_up thickness fraction {
-    reghdfe `var' i.event##c.imply solar_zenith, absorb(unique_county i.refy#i.id_t year doy) vce(cluster cluster calendar_month)
-
-    coefplot, yline(0, lp(solid) lc(cranberry)) xline(7.5, lp(dash) lc(black)) ///
-        baselevels omitted vert keep(*event#c.imply) ///
-        xlabel(1 "-7" 2 "-6" 3 "-5" 4 "-4" 5 "-3" 6 "-2" 7 "-1" 8 "0" 9 "1" 10 "2" 11 "3" 12 "4" 13 "5" 14 "6" 15 "7" 16 "8" 17 "9" 18 "10", labsize(medsmall)) ///
-        ylabel(, nogrid) ciopt(lcolor(black)) mcolor(black) ///
-        xtitle("Days Relative to Cloud Seeding Day") ///
-        ytitle("`: variable label `var''") scheme(stcolor)
-
-    graph export "$output/psm_`var'_zenith_control.png", replace
-}
+// * control solar zenith
+// foreach var in sw_toa_flux_up net_sw_surface_flux sw_radiance_up {
+//	
+//     reghdfe `var' i.event##c.imply solar_zenith, absorb(unique_county i.refy#i.id_t year doy) vce(cluster cluster calendar_month)
+//
+//     coefplot, yline(0, lp(solid) lc(cranberry)) xline(7.5, lp(dash) lc(black)) ///
+//         baselevels omitted vert keep(*event#c.imply) ///
+//         xlabel(1 "-7" 2 "-6" 3 "-5" 4 "-4" 5 "-3" 6 "-2" 7 "-1" 8 "0" 9 "1" 10 "2" 11 "3" 12 "4" 13 "5" 14 "6" 15 "7" 16 "8" 17 "9" 18 "10", labsize(medsmall)) ///
+//         ylabel(, nogrid) ciopt(lcolor(black)) mcolor(black) ///
+//         xtitle("Days Relative to Cloud Seeding Day") ///
+//         ytitle("`: variable label `var''") scheme(stcolor)
+//
+//     graph export "$output/psm_`var'_zenith_control.png", replace
+// }
 
 
 * no control of solar zenith
-foreach var in sw_toa_flux_up net_sw_surface_flux sw_radiance_up thickness fraction {
+foreach var in sw_toa_flux_up net_sw_surface_flux sw_radiance_up thickness fraction lw_toa_flux_up net_lw_surface_flux{
+
     reghdfe `var' i.event##c.imply, absorb(unique_county i.refy#i.id_t year doy) vce(cluster cluster calendar_month)
 
     coefplot, yline(0, lp(solid) lc(cranberry)) xline(7.5, lp(dash) lc(black)) ///
@@ -264,6 +293,44 @@ foreach var in sw_toa_flux_up net_sw_surface_flux sw_radiance_up thickness fract
 
     graph export "$output/psm_`var'.png", replace
 }
+
+// ********* Robustness check: using base 5 *********
+// use "$final/psm_10days_nopre.dta", clear
+// gen event = refy+7
+// fvset base 5 event
+//
+// egen unique_county=group(dt_adcode id_t)
+//
+// egen doy=group(month day)
+//
+// egen calendar_month=group(year month)
+//
+// gen cluster=.
+// replace cluster = id_t if imply==1
+// replace cluster = id_c if imply==0
+//
+//
+// * clean flux/radiance variable at night
+// replace sw_toa_flux_up = . if sw_toa_flux_up == 0
+// replace sw_radiance_up = . if sw_radiance_up == 0
+//
+// *************** Graphs
+//
+//
+// * no control of solar zenith
+// foreach var in fraction {
+//
+//     reghdfe `var' i.event##c.imply, absorb(unique_county i.refy#i.id_t year doy) vce(cluster cluster calendar_month)
+//
+//     coefplot, yline(0, lp(solid) lc(cranberry)) xline(7.5, lp(dash) lc(black)) ///
+//         baselevels omitted vert keep(*event#c.imply) ///
+//         xlabel(1 "-7" 2 "-6" 3 "-5" 4 "-4" 5 "-3" 6 "-2" 7 "-1" 8 "0" 9 "1" 10 "2" 11 "3" 12 "4" 13 "5" 14 "6" 15 "7" 16 "8" 17 "9" 18 "10", labsize(medsmall)) ///
+//         ylabel(, nogrid) ciopt(lcolor(black)) mcolor(black) ///
+//         xtitle("Days Relative to Cloud Seeding Day") ///
+//         ytitle("`: variable label `var''") scheme(stcolor)
+//
+//     graph export "$output/psm_`var'_base5.png", replace
+// }
 
 
 

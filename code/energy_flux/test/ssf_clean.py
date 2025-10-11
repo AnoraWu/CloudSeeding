@@ -42,15 +42,25 @@ def clean_nc_file(file, districts):
         print("assigned combined group")
 
         # Select variables to keep
-        variables_to_keep = ['Mean_water_particle_radius_for_cloud_layer__3_7_',
-                             'Stddev_of_water_particle_radius_for_cloud_layer__3_7_',
-                             'Mean_ice_particle_effective_radius_for_cloud_layer__3_7_',
-                             'Stddev_of_ice_particle_effective_radius_for_cloud_layer__3_7_',
-                             'Mean_water_particle_radius_for_cloud_layer__1_2_',
-                             'Mean_ice_particle_effective_radius_for_cloud_layer__1_2_',
-                             'Mean_water_particle_radius_for_cloud_layer__2_1_',
-                             'Mean_ice_particle_effective_radius_for_cloud_layer__2_1_',
-                             
+        variables_to_keep = ['CERES_viewing_zenith_at_surface',
+                             'CERES_relative_azimuth_at_surface',
+                             'CERES_solar_zenith_at_surface',
+                             'CERES_SW_TOA_flux___upwards',
+                             'CERES_SW_radiance___upwards',
+                             'CERES_LW_TOA_flux___upwards',
+                             'CERES_LW_radiance___upwards',
+                             'CERES_WN_TOA_flux___upwards',
+                             'CERES_WN_radiance___upwards',
+                             'TOA_Incoming_Solar_Radiation',
+                             'CERES_downward_SW_surface_flux___Model_B',
+                             'CERES_net_SW_surface_flux___Model_B',
+                             'CERES_downward_SW_surface_flux___Model_B__clearsky',
+                             'CERES_downward_LW_surface_flux___Model_B',
+                             'CERES_net_LW_surface_flux___Model_B',
+                             'CERES_downward_LW_surface_flux___Model_B__clearsky',
+                             'CERES_LW_surface_emissivity',
+                             'CERES_WN_surface_emissivity',
+                             'CERES_broadband_surface_albedo',
                              'combined_group']
         ds_selected = ds_masked[variables_to_keep]
         print("selected target variables")
@@ -60,7 +70,7 @@ def clean_nc_file(file, districts):
         print("converted")
 
         # Calculate means by combined group, clean the data
-        df_final = df_temp.groupby(['combined_group','Lower_and_Upper_Cloud_Layers']).mean() # NAvalues are ignored
+        df_final = df_temp.groupby(['combined_group']).mean() # NAvalues are ignored
         df_final = df_final.reset_index()
         df_final['adcode'] = df_final['combined_group'].str[0:6]
         df_final['date'] = df_final['combined_group'].str[7:]
@@ -91,6 +101,6 @@ if __name__ == "__main__":
         df_list = pool.starmap(clean_nc_file, map_iterables)
     
     df = pd.concat(df_list)
-    output_path = os.path.dirname(os.path.dirname(os.getcwd())) + '/intermediate/combined_ssf_droplets.csv'
+    output_path = os.path.dirname(os.path.dirname(os.getcwd())) + '/intermediate/combined_ssf.csv'
     df.to_csv(output_path, index=False)
     
