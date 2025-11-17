@@ -65,9 +65,13 @@ def clean_nc_file(file, districts):
         cols = ["CERES_SW_TOA_flux___upwards",
                 "CERES_SW_radiance___upwards",
                 "CERES_net_SW_surface_flux___Model_B",
-                "CERES_solar_zenith_at_surface",
-                ]
+                "CERES_solar_zenith_at_surface"]
         df_temp.loc[df_temp["CERES_solar_zenith_at_surface"] > 90, cols] = np.nan
+        # normalize the flux variables
+        df_temp["cos_solar"] = np.cos(np.deg2rad(df_temp["CERES_solar_zenith_at_surface"]))
+        # create normalized versions
+        for col in cols[:-1]:
+            df_temp[col + "_norm"] = df_temp[col] / df_temp['cos_solar']
 
         # Calculate means by combined group, clean the data
         df_final = df_temp.groupby(['combined_group']).mean() # NAvalues are ignored
@@ -82,7 +86,7 @@ def clean_nc_file(file, districts):
 if __name__ == "__main__":
 
     # load all files
-    os.chdir("/Users/anora/Team MG Dropbox/Wanru Wu/Cloudseeding_Anora/SSF/raw/terra")
+    os.chdir("/Users/anora/Library/CloudStorage/Dropbox-TeamMG/Wanru Wu/Cloudseeding_Anora/SSF/raw/terra")
 
     path = os.getcwd() 
     

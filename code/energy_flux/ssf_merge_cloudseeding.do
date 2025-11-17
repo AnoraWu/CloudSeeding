@@ -20,7 +20,7 @@ else if c(username)=="AW" {
 	global dir "F:\dropbox\Dropbox\Cloud Seeding"
 }
 else if c(username) == "anora"{
-	global dir "/Users/anora/Team MG Dropbox/Wanru Wu/Cloudseeding/Cloud Seeding"
+	global dir "/Users/anora/Library/CloudStorage/Dropbox-TeamMG/Wanru Wu/Cloudseeding/Cloud Seeding"
 }
 else {
 	global dir ""
@@ -33,10 +33,10 @@ global data "$dir/data"
 ***************************************************************************************************
 // define output directories
 global data_tem "$data/tem/match/pm_5_int"
-global final "/Users/anora/Team MG Dropbox/Wanru Wu/Cloudseeding_Anora/SSF/final/match_y"
-global output "/Users/anora/Team MG Dropbox/Wanru Wu/Cloudseeding_Anora/SSF/output/match_y"
+global final "/Users/anora/Library/CloudStorage/Dropbox-TeamMG/Wanru Wu/Cloudseeding_Anora/SSF/final/match_y"
+global output "/Users/anora/Library/CloudStorage/Dropbox-TeamMG/Wanru Wu/Cloudseeding_Anora/SSF/output/match_y"
 
-import delimited "/Users/anora/Team MG Dropbox/Wanru Wu/Cloudseeding_Anora/SSF/intermediate/combined_ssf.csv", clear
+import delimited "/Users/anora/Library/CloudStorage/Dropbox-TeamMG/Wanru Wu/Cloudseeding_Anora/SSF/intermediate/combined_ssf.csv", clear
 
 * collapse by group to eliminate duplicate data points 
 * due to different original files cover the same day and place
@@ -84,14 +84,14 @@ ren ceres_sw_toa_flux___upwards sw_toa_flux_up
 label var ceres_sw_radiance___upwards "CERES SW radiance upwards"
 ren ceres_sw_radiance___upwards sw_radiance_up
 
+label var ceres_lw_toa_flux___upwards "CERES LW TOA flux upwards"
+ren ceres_lw_toa_flux___upwards lw_toa_flux_up
+
 label var ceres_downward_sw_surface_flux__ "CERES downward SW surface flux Model B"
 ren ceres_downward_sw_surface_flux__ down_sw_surface_flux
  
 label var ceres_net_sw_surface_flux___mode "CERES net SW surface flux Model B"
 ren ceres_net_sw_surface_flux___mode net_sw_surface_flux
-
-label var ceres_lw_toa_flux___upwards "CERES LW TOA flux upwards"
-ren ceres_lw_toa_flux___upwards lw_toa_flux_up
 
 ren v7 downward_sw_surface_flux_c
 label var downward_sw_surface_flux_c "CERES downward SW surface_flux Model B clearsky"
@@ -104,6 +104,15 @@ ren ceres_net_lw_surface_flux___mode net_lw_surface_flux
 
 ren v10 downward_lw_surface_flux_c
 label var downward_lw_surface_flux_c "CERES downward LW surface flux Model B clearsky"
+
+label var ceres_sw_toa_flux___upwards_norm "CERES SW TOA flux upwards normalized"
+ren ceres_sw_toa_flux___upwards_norm  sw_toa_flux_up_norm
+
+label var ceres_sw_radiance___upwards_norm "CERES SW radiance upwards normalized"
+ren ceres_sw_radiance___upwards_norm sw_radiance_up_norm
+
+label var v14 "CERES net SW surface flux Model B normalized"
+ren v14 net_sw_surface_flux_norm
 
 // label var v13 "CERES downward SW surface flux Model B clearsky"
 // label var v16 "CERES downward LW surface flux Model B clearsky"
