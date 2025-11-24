@@ -13,7 +13,7 @@ import numpy as np
 if __name__ == "__main__":
     
     ### Set directories
-    data_dir = "/Users/anorawu/BFI Dropbox/Wanru Wu/Cloudseeding/data"
+    data_dir = "/Users/anorawu/Team MG Dropbox/Wanru Wu/Cloudseeding/data"
 
     # cloud thickness and fraction
     modis_dir = f"{data_dir}/MODIS"
@@ -258,7 +258,7 @@ if __name__ == "__main__":
         for year in range(2010, 2024):
             for month in range(1, 13):
                 # read the precipitation data
-                rain_data = pd.read_stata(rf"{data_dir}/GPM/{year}/{year}{month:02}.dta")
+                rain_data = pd.read_stata(rf"{data_dir}/GPM/{year}{month:02}.dta")
                 rain_data.dropna(inplace=True)
 
                 # Check if dates are complete

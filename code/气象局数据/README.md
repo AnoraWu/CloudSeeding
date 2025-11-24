@@ -8,5 +8,5 @@ dropbox for data
 5. manually check for time and location, record the changes in `data/气象局数据/人工处理/changes_log.csv` 
 6. update `data/气象局数据/人工处理/时间地点.csv` with `data/气象局数据/人工处理/changes_log.csv`, create `data/气象局数据/人工处理/merged_output.csv`, and clean the data to store in the `data/气象局数据/人工处理/result.csv`. The cleanning process requires manual adjustment of `data/气象局数据/人工处理/merged_output.csv` . (`code/气象局数据/人工处理code/helpmerge.py`)
 7. result.csv and output_1_11.csv has the same index system, the combined version is `data/气象局数据/人工处理/result_with_text.csv`)
-8. extract the posts issue dates (`code/气象局数据/extract_posting_time.py`) and store the extracted time in `data/气象局数据/人工处理/披露时间.csv` and `data/气象局数据/人工处理/披露时间only.csv` （披露时间only是披露时间去掉'气象局公告内容'这一个column的文件）
-9. manually clean the time data and store in `data/气象局数据/人工处理/披露时间only.csv` 
+8. extract the posts issue dates (`code/气象局数据/posting_time.py`) and store the extracted time in `data/气象局数据/人工处理/披露时间.csv` and `data/气象局数据/人工处理/披露时间only.csv` （披露时间only是披露时间去掉'气象局公告内容'这一个column的文件）
+9. manually clean the time data and store in `data/气象局数据/人工处理/披露时间only_cleaned.csv`, then use 

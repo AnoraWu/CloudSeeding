@@ -92,7 +92,7 @@ if __name__ == "__main__":
 
 
     # File paths and settings
-    data_dir = r"/Users/anorawu/BFI Dropbox/Wanru Wu/Cloudseeding/data"
+    data_dir = r"/Users/anorawu/Team MG Dropbox/Wanru Wu/Cloudseeding/data"
     modis_dir = f"{data_dir}/MODIS"
     output_file = f"{data_dir}/炮台数据/processed_cloud_data_1.csv"
 

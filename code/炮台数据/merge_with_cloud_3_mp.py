@@ -86,7 +86,7 @@ if __name__ == "__main__":
 
     # File paths and settings
     data_dir = r"/home/wanru/cloudseeding"
-    # data_dir = r"/Users/anorawu/BFI Dropbox/Wanru Wu/Cloudseeding/data"
+    # data_dir = r"/Users/anorawu/Team MG Dropbox/Wanru Wu/Cloudseeding/data"
     merra_dir = f"{data_dir}/MERRA_levmean"
     output_file = f"{data_dir}/炮台数据/server/processed_cloud_data_3.csv"
     # output_file = f"{data_dir}/炮台数据/processed_cloud_data_3.csv"

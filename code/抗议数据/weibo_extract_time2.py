@@ -35,7 +35,7 @@ def get_qwen_response(row,output_file,index):
 
 if __name__ == "__main__":
     
-    folder_dir  = r"/Users/anorawu/BFI Dropbox/Wanru Wu/Cloudseeding/data/抗议数据"
+    folder_dir  = r"/Users/anorawu/Team MG Dropbox/Wanru Wu/Cloudseeding/data/抗议数据"
     input_file   = rf"{folder_dir}/extracted_weibo_time.csv"
     output_file = rf"{folder_dir}/extracted_weibo_time2.csv"
 
