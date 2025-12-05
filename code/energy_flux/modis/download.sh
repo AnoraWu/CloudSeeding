@@ -1,4 +1,4 @@
-for i in {1..30}; do
+for i in {31..60}; do
     day=$(printf "%03d" "$i")
     wget -e robots=off -m -np -R .html,.tmp -nH --cut-dirs=3 \
         "https://ladsweb.modaps.eosdis.nasa.gov/archive/allData/61/MOD06_L2/2021/${day}/" \
@@ -7,7 +7,7 @@ for i in {1..30}; do
 done
 
 
-for i in {1..30}; do
+for i in {31..60}; do
     day=$(printf "%03d" "$i")
     wget -e robots=off -m -np -R .html,.tmp -nH --cut-dirs=3 \
         "https://ladsweb.modaps.eosdis.nasa.gov/archive/allData/61/MOD03/2021/${day}/" \
