@@ -1,5 +1,3 @@
-### Clean Township Shapefile
-
 import geopandas as gpd
 from shapely.geometry import MultiPolygon
 import pandas as pd
