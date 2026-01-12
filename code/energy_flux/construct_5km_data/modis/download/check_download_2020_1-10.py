@@ -7,14 +7,14 @@ warnings.filterwarnings('ignore')
 ### Check Downloaded MODIS Data 
 print("start checking..")
 
-parent_folder_path = '/project/mgreenst/cloudseeding/rawdata'
+parent_folder_path = '/Users/anora/Team MG Dropbox/Wanru Wu/Cloudseeding_Anora/MODIS_L2'
 os.chdir(parent_folder_path)
 
 cloud_file = "MOD06_L2"
 geo_file = "MOD03"
 
 years = [str(y) for y in range(2020,2021)]
-days  = ["{:03d}".format(num) for num in range(1,366)] # keep day 366, ignore in nonleap years
+days  = ["{:03d}".format(num) for num in range(1,11)] # keep day 366, ignore in nonleap years
 hours = ["{:02d}".format(num) for num in range(0, 24)]
 mins  = ["{:02d}".format(num) for num in range(0, 60, 5)]
 
