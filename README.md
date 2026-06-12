@@ -9,5 +9,5 @@ This folder cleaned weibo posts, constructed panel data, and analyzed the if Chi
 ### 气象局数据 (Meteorological Bureau Data)
 This folder processed official weather bureau records. Those cloud seeding records were added to the weibo cloud seeding data for all the regression analysis. 
 
-### 灾害数据/ (Disaster Data)
+### 灾害数据 (Disaster Data)
 This folder cleaned natural disaster records and analyzed if cloud seeding helped reduce hail frequencies (Table S10 in the paper draft). 
