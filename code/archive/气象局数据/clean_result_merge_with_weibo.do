@@ -1,5 +1,4 @@
-cd "/Users/anora/Library/CloudStorage/Dropbox-TeamMG/Wanru Wu/Cloudseeding/data/气象局数据/人工处理"
-
+cd "C:\Users\Anora\OneDrive\Desktop\data"
 import delimited "result_text_issuetime_cleaned.csv", clear 
 
 drop v1 index
@@ -413,90 +412,98 @@ tempfile qixiangjv
 save `qixiangjv'
 
 
+*** expand cities without counties ***
+preserve 
+
+* specify the cities that needs expansion in the file `cities'
+keep if county == ""
+keep city prov
+duplicates drop
+tempfile cities
+save `cities'
+
+* find the corresponding counties for those cities
+use "skeleton_merged2024.dta" ,clear
+keep county city prov
+duplicates drop
+merge m:1 city prov using `cities'
+
+keep if _merge == 3
+drop _merge
+
+* now we have the cities with their counties, join with qixiangjv data
+joinby prov city using `qixiangjv'
+
+tempfile cities_cleaned
+save `cities_cleaned'
+restore
+
+append using `cities_cleaned'
 
 
-**** For testing only ****
-//
-// cd "/Users/anora/Library/CloudStorage/Dropbox-TeamMG/Wanru Wu/Cloudseeding/Cloud Seeding/data/raw"
-//
-// *** expand cities without counties ***
-// preserve 
-//
-// * specify the cities that needs expansion in the file `cities'
-// keep if county == ""
-// keep city prov
-// duplicates drop
-// tempfile cities
-// save `cities'
-//
-// * find the corresponding counties for those cities
-// use "skeleton_merged2024.dta" ,clear
-// keep county city prov
-// duplicates drop
-// merge m:1 city prov using `cities'
-//
-// keep if _merge == 3
-// drop _merge
-//
-// * now we have the cities with their counties, join with qixiangjv data
-// joinby prov city using `qixiangjv'
-//
-// tempfile cities_cleaned
-// save `cities_cleaned'
-// restore
-//
-// append using `cities_cleaned'
-//
-//
-// *** expand 直辖市 without counties ***
-// preserve 
-// keep if prov == "重庆市" | prov == "上海市" | prov == "天津市" | prov == "北京市"
-// keep if county == ""
-// keep prov
-//
-// duplicates drop
-//
-// tempfile zhixiashi
-// save `zhixiashi'
-//
-// use "skeleton_merged2024.dta" ,clear
-// keep county city prov
-// duplicates drop
-// merge m:1 prov using `zhixiashi'
-//
-// keep if _merge == 3
-// drop _merge
-//
-// joinby prov using `qixiangjv'
-//
-// tempfile zhixiashi_cleaned
-// save `zhixiashi_cleaned'
-// restore
-//
-// append using `zhixiashi_cleaned'
-// drop if county == ""
-// merge m:1 prov city county year month day using "skeleton_merged2024.dta"
+*** expand 直辖市 without counties ***
+preserve 
+keep if prov == "重庆市" | prov == "上海市" | prov == "天津市" | prov == "北京市"
+keep if county == ""
+keep prov
 
-use "/Users/anora/Library/CloudStorage/Dropbox-TeamMG/Wanru Wu/Cloudseeding/Cloud Seeding/data/tem/cloudseeding.dta", clear
-drop if published_time == ""
-gen published_time2 = word(published_time, 1)
-replace published_time2 = subinstr(published_time2, "年", "-", .) 
-replace published_time2 = subinstr(published_time2, "月", "-", .) 
-replace published_time2 = subinstr(published_time2, "日", "", .) 
+duplicates drop
 
-replace published_time2 = string(year)+ "-" + published_time2 if substr(published_time2,1,2) != "20"
-gen pub_date  = date(published_time2, "YMD")
-gen pub_year  = year(pub_date)
-gen pub_month = month(pub_date)
-gen pub_day   = day(pub_date)
+tempfile zhixiashi
+save `zhixiashi'
 
-drop published_time2 published_time
+use "skeleton_merged2024.dta" ,clear
+keep county city prov
+duplicates drop
+merge m:1 prov using `zhixiashi'
 
-append using `qixiangjv'
+keep if _merge == 3
+drop _merge
 
-duplicates drop prov city county op_date,force
+joinby prov using `qixiangjv'
 
-* This code was given to Young for running, so I didn't save the final result
-* save "cloudseeding_merged.dta",replace
+tempfile zhixiashi_cleaned
+save `zhixiashi_cleaned'
+restore
+
+append using `zhixiashi_cleaned'
+drop if county == ""
+
+
+
+
+*** for final testing ***
+merge m:1 prov city county year month day using "skeleton_merged2024.dta"
+
+
+
+
+
+
+
+
+
+
+// use "/Users/anorawu/Team MG Dropbox/Wanru Wu/Cloudseeding/Cloud Seeding/data/tem/cloudseeding.dta", clear
+// drop if published_time == ""
+// gen published_time2 = word(published_time, 1)
+// replace published_time2 = subinstr(published_time2, "年", "-", .) 
+// replace published_time2 = subinstr(published_time2, "月", "-", .) 
+// replace published_time2 = subinstr(published_time2, "日", "", .) 
+//
+// replace published_time2 = string(year)+ "-" + published_time2 if substr(published_time2,1,2) != "20"
+// gen pub_date  = date(published_time2, "YMD")
+// gen pub_year  = year(pub_date)
+// gen pub_month = month(pub_date)
+// gen pub_day   = day(pub_date)
+//
+// drop published_time2 published_time
+//
+// append using `qixiangjv'
+//
+// duplicates drop prov city county op_date,force
+//
+// save "cloudseeding_merged.dta",replace
+
 
 
