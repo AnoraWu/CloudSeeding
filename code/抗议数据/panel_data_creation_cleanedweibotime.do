@@ -26,7 +26,7 @@ save "region_time_cleaned.dta",replace
 
 **************** create the weibo protest data ****************
 
-import delimited "weibo_protest3.csv", bindquote(strict) varnames(1) maxquotedrows(100) clear 
+import delimited "rawdata/weibo_protest3.csv", bindquote(strict) varnames(1) maxquotedrows(100) clear 
 tempfile weibo_original
 generate posts_str = substr(posts, 1, 2000) 
 keep posts_str size_max year month day 省 市 区 citycode adcode event_id
@@ -265,7 +265,7 @@ save "region_time_weibo_collapsed.dta", replace
 * using python, first cropping columns we want to use to avoid import error
 /*
 import pandas as pd
-df = pd.read_csv("/Users/anorawu/Team MG Dropbox/Wanru Wu/Cloudseeding/data/抗议数据/RFA_protest3.csv",encoding='utf-8')
+df = pd.read_csv("/Users/anorawu/Team MG Dropbox/Wanru Wu/Cloudseeding/data/抗议数据/rawdata/RFA_protest3.csv",encoding='utf-8')
 df = df[['adcode','location','size_level','year','month','day','citycode','省','市','区']]
 df.to_csv("/Users/anorawu/Team MG Dropbox/Wanru Wu/Cloudseeding/data/抗议数据/RFA_protest3_cropped.csv",index=False)
 */

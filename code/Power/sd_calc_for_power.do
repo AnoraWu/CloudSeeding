@@ -1,4 +1,4 @@
-use "/Users/anorawu/Team MG Dropbox/Wanru Wu/Cloudseeding/Cloud Seeding/data/tem/match/forecast_rain/psm_10days.dta", clear
+use "/Users/anora/Library/CloudStorage/Dropbox-TeamMG/Wanru Wu/Cloudseeding/Cloud Seeding/data/tem/match/forecast_rain/psm_10days.dta", clear
 
 sort id_c id_t year month day
 

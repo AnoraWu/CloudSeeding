@@ -16,9 +16,6 @@ Date: 09/03/2024
 * Set code directory
 global rootdir		"/Users/anora/Documents/GitHub/CloudSeeding/code/抗议数据"
 
-* Set data directory
-global datadir		"/Users/anora/Library/CloudStorage/Dropbox-TeamMG/Wanru Wu/Cloudseeding_Anora/抗议数据"
-
 * Set Python environment executable path
 * In terminal, activate environment and verify path with:
 * $ conda activate cloudseeding
