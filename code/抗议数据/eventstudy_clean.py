@@ -18,10 +18,11 @@ for city, city_df in df.groupby('citycode'):
             last_event = protest_date
 
 index_list = df.loc[df['event']==1,'index'].tolist()
-df['to_day']=None
-for index in index_list:
-    for i in range(-22,24):
-        if not (index+i<0) or (index+i>len(df)):
-            df.loc[df['index']==index+i,'to_day'] = i
-
+df['to_day'] = pd.NA
+for city, g in df.groupby('citycode'):
+    event_days = g.loc[g['event'] == 1, 'day'].tolist()
+    for ed in event_days:
+        for i in range(-22, 23):
+            mask = (df['citycode'] == city) & (df['day'] == ed + i)
+            df.loc[mask, 'to_day'] = i
 df.to_csv('eventstudy_weibo_city.csv')
