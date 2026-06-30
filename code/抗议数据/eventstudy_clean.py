@@ -6,6 +6,9 @@ import os
 import math
 os.chdir("/Users/anora/Library/CloudStorage/Dropbox-TeamMG/Wanru Wu/Cloudseeding_Anora/抗议数据")
 
+### cpca is a package (https://github.com/laofahai/cpca-rs) that detects and extracts the province, city, and county information in China
+### I used the Dec 2025 version of the package
+
 df = pd.read_stata("eventstudy_city.dta")
 df = df.sort_values(by=['citycode', 'date']).reset_index()
 df["day"] = df.groupby("citycode").cumcount()

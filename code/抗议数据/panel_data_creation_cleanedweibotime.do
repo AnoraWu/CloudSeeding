@@ -1,12 +1,11 @@
-/
 clear all
 
-cd "/Users/anorawu/Team MG Dropbox/Wanru Wu/Cloudseeding/data/抗议数据"
+cd "/Users/anora/Library/CloudStorage/Dropbox-TeamMG/Wanru Wu/Cloudseeding_Anora/抗议数据"
 
 ***************** build panel data skeleton *****************
 
 * use 2020年12月中华人民共和国县以上行政区划代码 from https://www.mca.gov.cn/mzsj/xzqh/2020/20201201.html
-import excel "region.xlsx", sheet("Sheet1") cellrange(A1:B3220) firstrow
+import excel "rawdata/region.xlsx", sheet("Sheet1") cellrange(A1:B3220) firstrow
 * drop empty rows
 drop if adcode >=.
 
@@ -22,7 +21,7 @@ format date %td
 * create a skeleton with all adcodes (2020 version) and date from 2010-01-01 to 2024-12-31
 keep adcode date
 
-save "region_time_cleaned.dta",replace
+save "intermediate/region_time_cleaned.dta",replace
 
 **************** create the weibo protest data ****************
 
@@ -32,7 +31,7 @@ generate posts_str = substr(posts, 1, 2000)
 keep posts_str size_max year month day 省 市 区 citycode adcode event_id
 save `weibo_original'
 
-import delimited "cleaned_time_weibo_protests.csv", bindquote(strict) varnames(1) maxquotedrows(100) clear 
+import delimited "intermediate/cleaned_time_weibo_protests.csv", bindquote(strict) varnames(1) maxquotedrows(100) clear 
 generate posts_str = substr(posts, 1, 2000) 
 keep posts_str year month day 省 市 区 day1 month1 year1
 merge m:1 posts_str year month day 省 市 区 using `weibo_original'
@@ -197,11 +196,11 @@ gen date = mdy(month,day,year)
 drop citycode 
 
 * this is only a temporary file, as there are 64 remaining entries cannot be merged successfully
-save "weibo_cleaned_1.dta",replace
+save "intermediate/weibo_cleaned_1.dta",replace
 
 
-use "region_time_cleaned.dta",clear
-merge 1:m adcode date using "weibo_cleaned_1.dta"
+use "intermediate/region_time_cleaned.dta",clear
+merge 1:m adcode date using "intermediate/weibo_cleaned_1.dta"
 
 * there are 64 entries requires manually cleaning
 preserve
@@ -236,13 +235,13 @@ append using `addition'
 * generate an indicator of protests
 gen one = 1 
 
-save "cleaned_weibo_protests.dta", replace
+save "intermediate/cleaned_weibo_protests.dta", replace
 
 
 
 * merge with skeleton
-use "region_time_cleaned.dta",clear
-merge 1:m adcode date using "cleaned_weibo_protests.dta"
+use "intermediate/region_time_cleaned.dta",clear
+merge 1:m adcode date using "intermediate/cleaned_weibo_protests.dta"
 keep if _merge == 3
 
 keep adcode date size_max size_original province city county one
@@ -256,24 +255,16 @@ collapse (sum) n_prt_weibo = one size_weibo = size_max size_original_weibo = siz
 * 如果有一个是missing的，那么加起来肯定是负数
 replace size_original_weibo =. if (size_original_weibo<0)
 
-save "region_time_weibo_collapsed.dta", replace
+save "intermediate/region_time_weibo_collapsed.dta", replace
 
 
 
 ************ create the RFA protest data ************
 
-* using python, first cropping columns we want to use to avoid import error
-/*
-import pandas as pd
-df = pd.read_csv("/Users/anorawu/Team MG Dropbox/Wanru Wu/Cloudseeding/data/抗议数据/rawdata/RFA_protest3.csv",encoding='utf-8')
-df = df[['adcode','location','size_level','year','month','day','citycode','省','市','区']]
-df.to_csv("/Users/anorawu/Team MG Dropbox/Wanru Wu/Cloudseeding/data/抗议数据/RFA_protest3_cropped.csv",index=False)
-*/
-
 
 * clean the RFA protest data 
 
-import delimited "RFA_protest3_cropped.csv",clear
+import delimited "intermediate/RFA_protest3_cropped.csv",clear
 
 * clean the data
 rename 省 province
@@ -313,11 +304,11 @@ gen one = 1
 
 * drop citycode variable because we want to create the citycode after all the merging
 drop citycode
-save "cleaned_rfa_protests.dta",replace
+save "intermediate/cleaned_rfa_protests.dta",replace
 
 
-use "region_time_cleaned.dta",clear
-merge 1:m adcode date using "cleaned_rfa_protests.dta"
+use "intermediate/region_time_cleaned.dta",clear
+merge 1:m adcode date using "intermediate/cleaned_rfa_protests.dta"
 
 * if there is one size entry missing for each adcode and each date, we will count it as missing. 
 replace size_original = -999999999 if (size_original==.)
@@ -325,35 +316,20 @@ replace size_original = -999999999 if (size_original==.)
 collapse (sum) n_prt_rfa=one size_rfa=size_level size_original_rfa=size_original, by (adcode date)
 replace size_original_rfa =. if (size_original_rfa<0)
 
-save "region_time_rfa_collapsed.dta",replace
+save "intermediate/region_time_rfa_collapsed.dta",replace
 
-merge 1:1 adcode date using "region_time_weibo_collapsed.dta"
+merge 1:1 adcode date using "intermediate/region_time_weibo_collapsed.dta"
 
 drop _merge
 
 label var n_prt_weibo "number of protests from weibo"
 label var n_prt_rfa   "number of protests from rfa"
 
-save "protest_panel.dta", replace
+save "intermediate/protest_panel.dta", replace
 
 ******* merge cloudseeding data *******
 
-* use python to generate the adcode variable
-/* 
-import pandas as pd
-import numpy as np
-from datetime import datetime, timedelta
-import cpca
-import os
-os.chdir("/Users/anorawu/Team MG Dropbox/Wanru Wu/Cloudseeding/data/抗议数据")
-
-df = pd.read_stata("cloudseeding.dta")
-df["district"] = df['prov'] + df['city'] + df['county']
-df_adcode = cpca.transform(df["district"])
-df['adcode'] = df_adcode['adcode']
-df.to_csv("cloudseeding_adcode.csv")
-*/
-import delimited "cloudseeding_adcode.csv", clear 
+import delimited "intermediate/cloudseeding_adcode.csv", clear 
 
 * clean the adcode 
 replace adcode = 140213 if prov == "山西省" & county == "平城区"
@@ -478,35 +454,22 @@ keep adcode date
 * generate an indicator of cloudseeding
 gen cloudseeding = 1
 
-save "cleaned_cloudseeding.dta",replace
+save "intermediate/cleaned_cloudseeding.dta",replace
 
-use "region_time_cleaned.dta", clear
-merge 1:m adcode date using "cleaned_cloudseeding.dta"
+use "intermediate/region_time_cleaned.dta", clear
+merge 1:m adcode date using "intermediate/cleaned_cloudseeding.dta"
 
 collapse (sum) n_cloudseeding = cloudseeding, by(adcode date)
 
-merge 1:1 adcode date using "protest_panel.dta"
+merge 1:1 adcode date using "intermediate/protest_panel.dta"
 drop _merge
 label var n_cloudseeding "number of cloudseeding"
 
-save "protest_cloudseeding_panel.dta", replace
+save "intermediate/protest_cloudseeding_panel.dta", replace
 
 ******* merge with rainfall data *******
-/*
-import pandas as pd
-import numpy as np
-from datetime import datetime, timedelta
-import cpca
-import os
-os.chdir("/Users/anorawu/Team MG Dropbox/Wanru Wu/Cloudseeding/data/抗议数据")
 
-df = pd.read_stata("Meteorological.dta")
-df["district"] = df['prov'] + df['city'] + df['county']
-df_adcode = cpca.transform(df["district"])
-df['adcode'] = df_adcode['adcode']
-df.to_csv("meteorological_adcode.csv")
-*/
-import delimited "meteorological_adcode.csv", clear 
+import delimited "intermediate/meteorological_adcode.csv", clear 
 keep prov city county year month day pre_station adcode
 
 rename prov province
@@ -674,10 +637,10 @@ replace adcode = 654223 if province == "新疆维吾尔自治区" & county == "�
 
 gen date = mdy(month,day,year)
 keep date pre_station adcode
-save "cleaned_rainfall.dta",replace
+save "intermediate/cleaned_rainfall.dta",replace
 
-use "region_time_cleaned.dta", clear
-merge 1:m adcode date using "cleaned_rainfall.dta"
+use "intermediate/region_time_cleaned.dta", clear
+merge 1:m adcode date using "intermediate/cleaned_rainfall.dta"
 drop _merge
 
 * before collapse: so that missing values are still missing
@@ -685,11 +648,11 @@ replace pre_station = -999999999 if pre_station ==.
 collapse (sum) rainfall=pre_station, by(adcode date)
 replace rainfall=. if rainfall < 0
 
-merge 1:1 adcode date using "protest_cloudseeding_panel.dta"
+merge 1:1 adcode date using "intermediate/protest_cloudseeding_panel.dta"
 drop _merge
 label var rainfall "rainfall"
 
-save "protest_cloudseeding_rainfal_panel.dta", replace
+save "intermediate/protest_cloudseeding_rainfal_panel.dta", replace
 
 
 ******* final clean *******
@@ -716,7 +679,7 @@ replace citycode = 5000 if (substr(string(citycode), 1, 2) == "50")
 *generate week variable
 bysort adcode date: gen week = floor((date - date("2010-01-01", "YMD")) / 7) + 1
 
-save "final_panel_newweibo.dta",replace
+save "final/final_panel_newweibo.dta",replace
 
 
 

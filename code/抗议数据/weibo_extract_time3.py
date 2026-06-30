@@ -1,10 +1,7 @@
-import ollama
 import pandas as pd
-import csv
-import os
 from multiprocessing import Pool
 
-folder_dir  = r"/Users/anorawu/Team MG Dropbox/Wanru Wu/Cloudseeding/data/抗议数据"
+folder_dir  = r"/Users/anorawu/Team MG Dropbox/Wanru Wu/Cloudseeding/data/抗议数据/intermediate"
 input_file   = rf"{folder_dir}/extracted_weibo_time2.csv"
 
 df = pd.read_csv(input_file, encoding="utf-8",dtype={"省":"string","市":"string","区":"string"},index_col=False )
@@ -26,7 +23,7 @@ df['year1'] = df['time2'].str.extract(r'(\d+)(?=年)')
 df['day1'] = df['time2'].str.extract(r'(\d+)(?=日)')
 df.loc[df['day1'].isna(), 'day1'] = df['time2'].str.extract(r'(\d+)(?=号)')
 
-df1= df.loc[(df['year1'].isna()) | (df['month1'].isna()) | (df['day1'].isna())]
+df1 = df.loc[(df['year1'].isna()) | (df['month1'].isna()) | (df['day1'].isna())].copy()
 df1['time1'] = df1['time1'].astype(str)
 df1['time1'] = df1['time1'].str.replace("[", "")
 df1['time1'] = df1['time1'].str.replace("]", "")
@@ -53,4 +50,4 @@ df1.loc[df1['month1'].isna(), 'month1'] = df1['month']
 df2 = pd.concat([df,df1])
 df2.dropna(subset=['year1', 'month1','day1'],inplace=True)
 df2.drop_duplicates(subset=['posts','year1', 'month1','day1'],inplace=True)
-df2.to_csv('cleaned_time_weibo_protests.csv')
+df2.to_csv(rf'{folder_dir}/cleaned_time_weibo_protests.csv')

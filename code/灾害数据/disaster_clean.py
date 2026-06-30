@@ -3,6 +3,10 @@ import numpy as np
 from datetime import datetime, timedelta
 import cpca
 import os
+
+### cpca is a package (https://github.com/laofahai/cpca-rs) that detects and extracts the province, city, and county information in China
+### I used the Dec 2025 version of the package
+
 os.chdir("/Users/anora/Library/CloudStorage/Dropbox-TeamMG/Wanru Wu/Cloudseeding_Anora/灾害数据/rawdata")
 df = pd.read_stata("自然灾害事件_since_2014_CN.dta")
 
