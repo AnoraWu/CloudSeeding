@@ -79,9 +79,18 @@ shell $pythonpath "prepare_panel_data.py"
 * 12. final/final_panel_newweibo.dta     
 do "panel_data_creation_cleanedweibotime.do"
 
-
+* Purpose: clean panel data
+* input: final/final_panel_newweibo.dta     
+* output: final/eventstudy_city.dta
 do "eventstudy_protest1.do"
+
+* Purpose: identify events and prepare for the event study analysis
+* input: final/eventstudy_city.dta
+* output: final/eventstudy_weibo_city.csv
 shell $pythonpath "eventstudy_clean.py"
+
+* Purpose: 
+* input: final/eventstudy_weibo_city.csv
 do "eventstudy_protest2.do"
 
 
