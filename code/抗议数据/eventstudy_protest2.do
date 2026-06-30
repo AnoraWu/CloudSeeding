@@ -1,5 +1,5 @@
 * input dir
-cd "/Users/anorawu/Team MG Dropbox/Wanru Wu/Cloudseeding/data/抗议数据"
+cd "/Users/anora/Library/CloudStorage/Dropbox-TeamMG/Wanru Wu/Cloudseeding_Anora/抗议数据/final"
 import delimited "eventstudy_weibo_city.csv", clear 
 
 * regenerate date variable
@@ -40,5 +40,8 @@ reghdfe n_cloudseeding g_* g0-g10 rainfall, a(i.citycode i.date) vce(cluster cit
 coefplot, keep(g_* g0 g1 g2 g3 g4 g5 g6 g7 g8 g9 g10) vertical omitted xlabel(1 "-7" 2 "-6" 3 "-5" 4 "-4" 5 "-3" 6 "-2" 7 "-1" 8 "0" 9 "1" 10 "2" 11 "3" 12 "4" 13 "5" 14 "6" 15 "7" 16 "8" 17 "9" 18 "10", labsize(medsmall))  ///
 xtitle("") ytitle("Protest", size(medsmall) margin(small)) ///
 xline(7.5, lc(cranberry)) yscale(range(-0.02 0.02)) yline(0) subtitle("Cloud Seeding & Protests") scheme(stcolor)
-graph export "F:\dropbox\Dropbox\Cloud Seeding\data\tem\protest\protest.jpg", replace
+
+* This script is ran by Zhangyang since I didn't have the STATA 18. 
+* Thus, the result is not saved on my end.
+* graph export "F:\dropbox\Dropbox\Cloud Seeding\data\tem\protest\protest.jpg", replace
 
