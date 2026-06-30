@@ -1,6 +1,6 @@
 
 * input dir
-cd "/Users/anorawu/Team MG Dropbox/Wanru Wu/Cloudseeding/data/抗议数据/final"
+cd "/Users/anora/Library/CloudStorage/Dropbox-TeamMG/Wanru Wu/Cloudseeding_Anora/抗议数据/final"
 
 
 use "final_panel_newweibo.dta",clear
