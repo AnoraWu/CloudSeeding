@@ -56,14 +56,14 @@ forvalues k = 0/10{
 replace g_1 = 0
 
 
-// * use the mean the previous three days to avoid reserve causality
-// forvalues i = 1(1)3{
-// 	bys citycode (date): gen rain_`i' = L`i'.rainfall
-// }
-// drop rainfall
-// gen rainfall = (rain_1 + rain_2 + rain_3)/3
-// label var rainfall "rainfall"
-// drop rain_*
+* use the mean the previous three days to avoid reserve causality
+forvalues i = 1(1)3{
+	bys citycode (date): gen rain_`i' = L`i'.rainfall
+}
+drop rainfall
+gen rainfall = (rain_1 + rain_2 + rain_3)/3
+label var rainfall "rainfall"
+drop rain_*
 
 *reghdfe
 reghdfe n_cloudseeding g_* g0-g10 rainfall, a(i.citycode i.date) vce(cluster citycode)
