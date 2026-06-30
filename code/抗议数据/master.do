@@ -91,6 +91,7 @@ shell $pythonpath "eventstudy_clean.py"
 
 * Purpose: 
 * input: final/eventstudy_weibo_city.csv
+* output: The scripted is ran by Zhangyang and output is not saved on my end. 
 do "eventstudy_protest2.do"
 
 
