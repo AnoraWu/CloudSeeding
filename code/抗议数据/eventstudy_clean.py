@@ -3,11 +3,13 @@ import os
 os.chdir("/Users/anora/Library/CloudStorage/Dropbox-TeamMG/Wanru Wu/Cloudseeding_Anora/抗议数据/final")
 
 df = pd.read_stata("eventstudy_city.dta")
-df = df.sort_values(by=['citycode', 'date']).reset_index()
+# Corrected a mistake in the next line: added "drop=True". 
+# Will not affect the final result as the "eventstudy_city.dta" file is already sorted
+df = df.sort_values(by=['citycode', 'date']).reset_index(drop=True)
 df["day"] = df.groupby("citycode").cumcount()
 df['event'] = 0
 
-# Identify events (first protest and subsequent protests >= 3 months apart)
+# Identify events (first protest and subsequent protests 90 days (about 3 months) apart)
 for city, city_df in df.groupby('citycode'):
     protest_dates = city_df.loc[city_df['n_prt_weibo'] > 0, 'day'].sort_values().tolist()
     last_event = None
@@ -17,8 +19,9 @@ for city, city_df in df.groupby('citycode'):
             df.loc[(df['citycode'] == int(city)) & (df['day'] == protest_date),'event'] = 1
             last_event = protest_date
 
-index_list = df.loc[df['event']==1,'index'].tolist()
 df['to_day'] = pd.NA
+# Corrected a mistake: group the data by 'citycode' before assignning "to_day" variable. 
+# Will affect the final result but the difference is indistinguishable.
 for city, g in df.groupby('citycode'):
     event_days = g.loc[g['event'] == 1, 'day'].tolist()
     for ed in event_days:
