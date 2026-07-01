@@ -46,6 +46,7 @@ if __name__ == "__main__":
     file_path = 'output_1-11.csv'  
     data = pd.read_csv(file_path)
 
+    os.chdir("/Users/anorawu/Documents/GitHub/CloudSeeding/data/气象局数据/人工处理")
     for index,row in data.iloc[start_index:].iterrows():
     # Apply the function to each row in the target column
         with open('时间地点.csv', 'a') as csvfile:  
