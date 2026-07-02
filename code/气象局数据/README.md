@@ -29,6 +29,6 @@ output: `气象局数据/人工处理/result_with_text.csv`
 6. extract the post-issuing dates and store the extracted time in `气象局数据/人工处理/result_text_issuetime_cleaned.csv`. This step requires mannually cleanning, which is indicated in the code. 
 code: `code/气象局数据/posting_time.py`
 input: `气象局数据/人工处理/result_with_text.csv`\
-output: `气象局数据/人工处理/披露时间only.csv`, `气象局数据/人工处理/result_text_issuetime.csv`, `气象局数据/人工处理/result_text_issuetime_cleaned.csv`
+output: `气象局数据/人工处理/披露时间only.csv`, `气象局数据/人工处理/披露时间only_cleaned.csv`, `气象局数据/人工处理/result_text_issuetime.csv`, `气象局数据/人工处理/need_manual_issue_time.csv`, `气象局数据/人工处理/need_manual_issue_time_url.csv`, `气象局数据/人工处理/need_manual_issue_time_url_cleaned.csv`, `气象局数据/人工处理/result_text_issuetime_cleaned.csv`
 
 7. use `clean_result_merge_with_weibo.do` to merge with weibo cloud seeding data
