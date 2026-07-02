@@ -25,6 +25,7 @@ df[['time','location','index','time1','time1.5','time2',
     'time3','time4','time5','time6','time7','time8','time9',
     'time10','time11','time12','time13']].to_csv(f"{folder}/披露时间only.csv")
 
+# manually clean the time data and store in data/气象局数据/人工处理/披露时间only_cleaned.csv
 df2 = pd.read_csv(f"{folder}/披露时间only_cleaned.csv")
 df['issue_time'] = df2[['time1','time1-5','time2','time3','time4','time5',
                         'time6','time7','time8','time9','time10','time11',
