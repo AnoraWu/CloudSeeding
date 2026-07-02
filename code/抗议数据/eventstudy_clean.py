@@ -9,7 +9,7 @@ df = df.sort_values(by=['citycode', 'date']).reset_index(drop=True)
 df["day"] = df.groupby("citycode").cumcount()
 df['event'] = 0
 
-# Identify events (first protest and subsequent protests 90 days (about 3 months) apart)
+# Identify events (first protest and subsequent protests 45 days apart)
 for city, city_df in df.groupby('citycode'):
     protest_dates = city_df.loc[city_df['n_prt_weibo'] > 0, 'day'].sort_values().tolist()
     last_event = None
