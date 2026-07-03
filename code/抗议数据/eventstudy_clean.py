@@ -21,7 +21,7 @@ for city, city_df in df.groupby('citycode'):
 
 df['to_day'] = pd.NA
 # Corrected a mistake: group the data by 'citycode' before assignning "to_day" variable. 
-# Will affect the final result but the difference is indistinguishable.
+# Will affect the final result but the regression result difference is indistinguishable.
 for city, g in df.groupby('citycode'):
     event_days = g.loc[g['event'] == 1, 'day'].tolist()
     for ed in event_days:
