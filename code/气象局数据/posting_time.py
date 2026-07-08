@@ -1,7 +1,7 @@
 import pandas as pd
 
-folder = "/Users/anorawu/Team MG Dropbox/Wanru Wu/Cloudseeding/data/气象局数据/人工处理"
-input_dir = f"{folder}/result_with_text.csv"
+folder = "/Users/anorawu/Team MG Dropbox/Wanru Wu/Cloudseeding/data/气象局数据"
+input_dir = f"{folder}/人工处理/result_with_text.csv"
 
 df = pd.read_csv(input_dir)
 
@@ -23,30 +23,31 @@ df['time13'] = df['气象局公告内容'].str.extract(r'(日期：20\d{2}年\d{
 
 df[['time','location','index','time1','time1.5','time2',
     'time3','time4','time5','time6','time7','time8','time9',
-    'time10','time11','time12','time13']].to_csv(f"{folder}/披露时间only.csv")
+    'time10','time11','time12','time13']].to_csv(f"{folder}/人工处理/披露时间only.csv")
 
-# manually clean the time data and store in data/气象局数据/人工处理/披露时间only_cleaned.csv
-df2 = pd.read_csv(f"{folder}/披露时间only_cleaned.csv")
+# manually clean the time data and store the cleaned data in "data/气象局数据/人工处理/披露时间only_cleaned.csv"
+df2 = pd.read_csv(f"{folder}/人工处理/披露时间only_cleaned.csv")
 df['issue_time'] = df2[['time1','time1-5','time2','time3','time4','time5',
                         'time6','time7','time8','time9','time10','time11',
                         'time12','time13']].fillna(method='bfill', axis=1).iloc[:, 0]
-df[['time','location','index','气象局公告内容','issue_time']].to_csv(f"{folder}/result_text_issuetime.csv")
+df[['time','location','index','气象局公告内容','issue_time']].to_csv(f"{folder}/人工处理/result_text_issuetime.csv")
 
 df3 = df[df['issue_time'].isna()]
 df3.drop_duplicates(subset=['气象局公告内容'],inplace=True)
-df3.to_csv(f"{folder}/need_manual_issue_time.csv")
+df3.to_csv(f"{folder}/人工处理/need_manual_issue_time.csv")
 
-df4 = pd.read_csv("/Users/anorawu/Team MG Dropbox/Wanru Wu/Cloudseeding/data/气象局数据/data_bureau.csv")
+df4 = pd.read_csv(f"{folder}/data_bureau.csv")
+# cleaned the column "气象局公告内容" to match the column "气象局公告内容" "data/气象局数据/人工处理/result_with_text.csv"
 df4["气象局公告内容"] = df4["气象局公告内容"].str.replace(r'\s+', ' ', regex=True)
 df4.drop_duplicates(inplace=True)
 df5 = df3.merge(df4, on='气象局公告内容', how='left')
-df5.to_csv(f"{folder}/need_manual_issue_time_url.csv")
+df5.to_csv(f"{folder}/人工处理/need_manual_issue_time_url.csv")
 
 # manually add issue time to need_manual_issue_time_url.csv and generate need_manual_issue_time_url_cleaned.csv
-df6 = pd.read_csv(f"{folder}/need_manual_issue_time_url_cleaned.csv")
-df7 = pd.read_csv(f"{folder}/result_text_issuetime.csv")
+df6 = pd.read_csv(f"{folder}/人工处理/need_manual_issue_time_url_cleaned.csv")
+df7 = pd.read_csv(f"{folder}/人工处理/result_text_issuetime.csv")
 
 final_data = df7.merge(df6[['index','issue_time2']], on='index', how='left')
 final_data['issue_time'] = final_data[['issue_time','issue_time2']].bfill(axis=1).iloc[:,0]
 final_data.drop(columns=['Unnamed: 0', 'issue_time2'],inplace=True)
-final_data.to_csv(f"{folder}/result_text_issuetime_cleaned.csv")
+final_data.to_csv(f"{folder}/人工处理/result_text_issuetime_cleaned.csv")
