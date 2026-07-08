@@ -498,6 +498,6 @@ duplicates drop prov city county op_date,force
 
 * This code was given to Young for running, so I didn't save the final result
 * save "cloudseeding.dta",replace
-* The file "Cloud Seeding\data\tem\cloudseeding.dta" is the combined version of weibo and Meteorological Weather Bureau
+* The file "Cloud Seeding\data\tem\cloudseeding.dta" initially contains only weibo data, but after updating, it is the combined version of weibo and Meteorological Weather Bureau
 
 
