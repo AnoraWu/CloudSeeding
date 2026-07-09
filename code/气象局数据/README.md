@@ -53,4 +53,5 @@ code: `code/气象局数据/clean_result_merge_with_weibo.do`\
 input:
 - `气象局数据/人工处理/result_text_issuetime_cleaned.csv`
 - `Cloud Seeding/data/tem/cloudseeding.dta`  (initially weibo-only)\
-output: none written as-is. This code was given to Yang Zhang (Shaoda's RA for running).
+output: none written as-is. This code was given to Yang Zhang (Shaoda's RA for running). This procedure might include some manual cleaning from Yang as well.
+
