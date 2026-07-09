@@ -1,4 +1,4 @@
-cd "/Users/anora/Library/CloudStorage/Dropbox-TeamMG/Wanru Wu/Cloudseeding/data/气象局数据/人工处理"
+cd "/Users/anora/Library/CloudStorage/Dropbox/Cloudseeding/data/气象局数据/人工处理/"
 
 import delimited "result_text_issuetime_cleaned.csv", clear 
 
@@ -477,7 +477,7 @@ save `qixiangjv'
 // drop if county == ""
 // merge m:1 prov city county year month day using "skeleton_merged2024.dta"
 
-use "/Users/anora/Library/CloudStorage/Dropbox-TeamMG/Wanru Wu/Cloudseeding/Cloud Seeding/data/tem/cloudseeding.dta", clear
+use "/Users/anora/Library/CloudStorage/Dropbox/Cloudseeding/Cloud Seeding/data/tem/cloudseeding.dta", clear
 drop if published_time == ""
 gen published_time2 = word(published_time, 1)
 replace published_time2 = subinstr(published_time2, "年", "-", .) 
@@ -496,8 +496,8 @@ append using `qixiangjv'
 
 duplicates drop prov city county op_date,force
 
-* This code was given to Young for running, so I didn't save the final result
+* This code was given to Yang (Shaoda's RA) for running, so I didn't save the final result
 * save "cloudseeding.dta",replace
-* The file "Cloud Seeding\data\tem\cloudseeding.dta" initially contains only weibo data, but after updating, it is the combined version of weibo and Meteorological Weather Bureau
+* The file "Cloud Seeding\data\tem\cloudseeding.dta" initially contains only weibo data, but after updating, it is the combined version of weibo and Meteorological Weather Bureau. This procedure might include some manual cleaning from Yang.
 
 
